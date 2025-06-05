@@ -25,11 +25,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 }) => {
   const components: Components = {
     // Custom list rendering for task lists
-    ul: ({ children, ...props }: TaskListProps) => (
-      <ul className="task-list space-y-1" {...props}>
-        {children}
-      </ul>
-    ),
+    ul: ({ children, ...props }: TaskListProps) => {
+      const depth = (props as any)?.depth || 0;
+      return (
+        <ul className={`task-list space-y-1 ${depth > 0 ? 'nested-task-list' : ''}`} {...props}>
+          {children}
+        </ul>
+      );
+    },
     
     // Custom list item rendering for tasks
     li: ({ children, ...props }: any) => {

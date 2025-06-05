@@ -186,6 +186,40 @@ body {
   margin-top: 4px;
 }
 
+/* Specific indentation levels for subtasks */
+.task-list {
+  position: relative;
+}
+
+.task-list li[data-depth="1"] {
+  margin-left: 20px;
+}
+
+.task-list li[data-depth="2"] {
+  margin-left: 40px;
+}
+
+/* Visual indicators for nested levels */
+.task-list li[data-depth="1"]:before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 8px;
+  width: 8px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.task-list li[data-depth="2"]:before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 8px;
+  width: 8px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* Preview mode toggle button */
 .preview-toggle-button {
   width: 24px;

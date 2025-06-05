@@ -32,6 +32,73 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         setIsPreviewMode(prev => !prev);
       }
 
+      // Enter key handling for task lists
+      if (!isPreviewMode && textareaRef.current && e.key === 'Enter') {
+        const textarea = textareaRef.current;
+        const start = textarea.selectionStart;
+        const lines = content.split('\n');
+        
+        // Find current line
+        let currentPos = 0;
+        let currentLineIndex = 0;
+        
+        for (let i = 0; i < lines.length; i++) {
+          if (currentPos <= start && start <= currentPos + lines[i].length) {
+            currentLineIndex = i;
+            break;
+          }
+          currentPos += lines[i].length + 1;
+        }
+        
+        const currentLine = lines[currentLineIndex];
+        const taskMatch = currentLine.match(/^(\s*)([-*+])\s+(\[[ x]\])?\s*(.*)/);
+        
+        if (taskMatch) {
+          const [, indentation, marker, checkbox, content] = taskMatch;
+          
+          // If the task content is empty, remove the task marker
+          if (!content.trim()) {
+            e.preventDefault();
+            const newLines = [...lines];
+            newLines[currentLineIndex] = indentation; // Just keep indentation
+            
+            const newContent = newLines.join('\n');
+            onChange(newContent);
+            
+            // Position cursor at end of line
+            setTimeout(() => {
+              if (textarea) {
+                const newPos = lines.slice(0, currentLineIndex).join('\n').length + 
+                             (currentLineIndex > 0 ? 1 : 0) + indentation.length;
+                textarea.selectionStart = newPos;
+                textarea.selectionEnd = newPos;
+                textarea.focus();
+              }
+            }, 0);
+            return;
+          }
+          
+          // Create new task item with same indentation and checkbox
+          e.preventDefault();
+          const newTaskLine = `${indentation}${marker} ${checkbox || '[ ]'} `;
+          const beforeCursor = content.substring(0, start);
+          const afterCursor = content.substring(start);
+          
+          const newContent = beforeCursor + '\n' + newTaskLine + afterCursor;
+          onChange(newContent);
+          
+          // Position cursor after the new task marker
+          setTimeout(() => {
+            if (textarea) {
+              const newPos = start + 1 + newTaskLine.length;
+              textarea.selectionStart = newPos;
+              textarea.selectionEnd = newPos;
+              textarea.focus();
+            }
+          }, 0);
+        }
+      }
+
       // Tab and Shift+Tab for indentation (when in edit mode)
       if (!isPreviewMode && textareaRef.current && (e.key === 'Tab')) {
         e.preventDefault();
@@ -61,16 +128,40 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         let selectionOffset = 0;
 
         for (let i = startLine; i <= endLine; i++) {
+          const line = newLines[i];
+          const isTaskLine = line.trim().match(/^[-*+]\s+(\[[ x]\])?\s*/);
+          
           if (e.shiftKey) {
             // Remove indentation (Shift+Tab)
-            if (newLines[i].startsWith('  ')) {
-              newLines[i] = newLines[i].substring(2);
-              if (i === startLine) selectionOffset -= 2;
+            if (isTaskLine) {
+              // For task lines, remove 2 spaces but keep the list marker
+              if (line.startsWith('  ')) {
+                newLines[i] = line.substring(2);
+                if (i === startLine) selectionOffset -= 2;
+              }
+            } else {
+              // For regular lines, remove 2 spaces
+              if (line.startsWith('  ')) {
+                newLines[i] = line.substring(2);
+                if (i === startLine) selectionOffset -= 2;
+              }
             }
           } else {
             // Add indentation (Tab)
-            newLines[i] = '  ' + newLines[i];
-            if (i === startLine) selectionOffset += 2;
+            if (isTaskLine) {
+              // Check current indentation level
+              const leadingSpaces = line.match(/^(\s*)/)?.[1].length || 0;
+              
+              // Limit to 2 levels of indentation (0, 2, 4 spaces)
+              if (leadingSpaces < 4) {
+                newLines[i] = '  ' + line;
+                if (i === startLine) selectionOffset += 2;
+              }
+            } else {
+              // For regular lines, add 2 spaces
+              newLines[i] = '  ' + line;
+              if (i === startLine) selectionOffset += 2;
+            }
           }
         }
 

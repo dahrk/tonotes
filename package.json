@@ -2,7 +2,7 @@
   "name": "postitapp",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/main/main.js",
+  "main": "dist/main/main.ts",
   "homepage": "./",
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
