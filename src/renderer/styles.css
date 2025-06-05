@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-yellow-note: #FFEB9C;
+  --color-pink-note: #FFB3D9;
+  --color-blue-note: #B3D9FF;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.note-yellow {
+  background-color: var(--color-yellow-note);
+}
+
+.note-pink {
+  background-color: var(--color-pink-note);
+}
+
+.note-blue {
+  background-color: var(--color-blue-note);
+}
