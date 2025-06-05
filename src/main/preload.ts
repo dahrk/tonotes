@@ -15,6 +15,7 @@ const electronAPI = {
   addTagToNote: (noteId: string, tagId: number) => ipcRenderer.invoke('add-tag-to-note', noteId, tagId),
   removeTagFromNote: (noteId: string, tagId: number) => ipcRenderer.invoke('remove-tag-from-note', noteId, tagId),
   getNoteTags: (noteId: string) => ipcRenderer.invoke('get-note-tags', noteId),
+  getAllTags: () => ipcRenderer.invoke('get-all-tags'),
 
   // Window operations
   closeWindow: () => ipcRenderer.invoke('close-window'),

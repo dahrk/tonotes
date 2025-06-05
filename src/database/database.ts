@@ -147,6 +147,11 @@ export class Database {
     return stmt.all(noteId) as Tag[];
   }
 
+  public getAllTags(): Tag[] {
+    const stmt = this.db.prepare('SELECT id, name FROM tags ORDER BY name');
+    return stmt.all() as Tag[];
+  }
+
   public close(): void {
     this.db.close();
   }

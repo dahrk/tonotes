@@ -192,6 +192,10 @@ class PostItApp {
       return this.database.getNoteTags(noteId);
     });
 
+    ipcMain.handle('get-all-tags', () => {
+      return this.database.getAllTags();
+    });
+
     ipcMain.handle('close-window', (event) => {
       const window = BrowserWindow.fromWebContents(event.sender);
       if (window) {

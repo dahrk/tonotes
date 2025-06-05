@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import NoteEditor from '../components/NoteEditor';
-import type { Note } from '../types';
+import TagInput from '../components/TagInput';
+import type { Note, Tag } from '../types';
 
 const App: React.FC = () => {
   const [note, setNote] = useState<Note | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -13,6 +15,10 @@ const App: React.FC = () => {
       const loadedNote = await window.electronAPI.getNote(noteId);
       if (loadedNote) {
         setNote(loadedNote);
+        
+        // Load tags for this note
+        const noteTags = await window.electronAPI.getNoteTags(noteId);
+        setTags(noteTags);
       }
     } catch (error) {
       console.error('Failed to load note:', error);
@@ -90,12 +96,11 @@ const App: React.FC = () => {
     <div className={`note-window ${backgroundClass}`}>
       {/* Header */}
       <div className="note-header">
-        <div className="flex items-center space-x-2 overflow-x-auto">
-          {/* Tags placeholder */}
-          <span className="text-xs bg-white bg-opacity-60 px-2 py-1 rounded-full whitespace-nowrap">
-            sample-tag
-          </span>
-        </div>
+        <TagInput
+          noteId={note.id}
+          tags={tags}
+          onTagsChange={setTags}
+        />
         <div className="flex items-center space-x-1">
           {/* Save button */}
           {hasUnsavedChanges && (
