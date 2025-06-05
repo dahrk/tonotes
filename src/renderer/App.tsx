@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import NoteEditor from '../components/NoteEditor';
 import type { Note } from '../types';
 
 const App: React.FC = () => {
@@ -118,18 +119,16 @@ const App: React.FC = () => {
       </div>
       
       {/* Content */}
-      <div className="note-content">
-        <textarea
-          className="note-textarea"
-          value={note.content}
-          onChange={(e) => {
-            setNote({ ...note, content: e.target.value });
-            setHasUnsavedChanges(true);
-            scheduleAutoSave();
-          }}
-          placeholder="Start typing..."
-        />
-      </div>
+      <NoteEditor
+        content={note.content}
+        onChange={(content) => {
+          setNote({ ...note, content });
+          setHasUnsavedChanges(true);
+          scheduleAutoSave();
+        }}
+        onSave={saveNote}
+        placeholder="Start typing..."
+      />
       
       {/* Resize handle */}
       <div className="resize-handle" title="Resize note"></div>
