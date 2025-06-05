@@ -107,7 +107,7 @@ class PostItApp {
       noteWindow.loadURL(`http://localhost:3000?noteId=${note.id}`);
       noteWindow.webContents.openDevTools();
     } else {
-      noteWindow.loadFile(path.join(__dirname, '../index.html'), {
+      noteWindow.loadFile(path.join(__dirname, '../../index.html'), {
         query: { noteId: note.id }
       });
     }
