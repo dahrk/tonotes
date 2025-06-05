@@ -3,11 +3,86 @@
 @tailwind utilities;
 
 :root {
+  /* Light theme colors */
   --color-yellow-note: #FFEB9C;
   --color-pink-note: #FFB3D9;
   --color-blue-note: #B3D9FF;
   --shadow-note: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-note-hover: 0 6px 16px rgba(0, 0, 0, 0.2);
+  
+  /* Text colors */
+  --text-primary: rgba(0, 0, 0, 0.8);
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --text-tertiary: rgba(0, 0, 0, 0.4);
+  --text-heading: rgba(0, 0, 0, 0.9);
+  
+  /* UI element colors */
+  --header-bg: rgba(0, 0, 0, 0.08);
+  --header-border: rgba(0, 0, 0, 0.1);
+  --button-bg: rgba(255, 255, 255, 0.6);
+  --button-hover-bg: rgba(255, 255, 255, 0.8);
+  --resize-handle: rgba(0, 0, 0, 0.1);
+  --resize-handle-hover: rgba(0, 0, 0, 0.2);
+  --progress-bg: rgba(0, 0, 0, 0.2);
+  --progress-text: rgba(0, 0, 0, 0.7);
+  
+  /* Tag colors */
+  --tag-bg: rgba(255, 255, 255, 0.6);
+  --tag-border: rgba(0, 0, 0, 0.1);
+  --tag-hover-bg: rgba(255, 255, 255, 0.8);
+  --tag-hover-border: rgba(0, 0, 0, 0.2);
+  --tag-text: rgba(0, 0, 0, 0.7);
+  --tag-add-bg: rgba(255, 255, 255, 0.4);
+  --tag-add-border: rgba(0, 0, 0, 0.3);
+  --tag-input-bg: rgba(255, 255, 255, 0.9);
+  --tag-input-border: rgba(0, 0, 0, 0.2);
+  --tag-dropdown-bg: rgba(255, 255, 255, 0.95);
+  
+  /* Link colors */
+  --link-color: rgba(0, 100, 200, 0.8);
+  --link-hover-color: rgba(0, 100, 200, 1);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  /* Dark theme note colors */
+  --color-yellow-note: #8B7355;
+  --color-pink-note: #8B5A6B;
+  --color-blue-note: #5A6B8B;
+  --shadow-note: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-note-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
+  
+  /* Dark theme text colors */
+  --text-primary: rgba(255, 255, 255, 0.9);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-heading: rgba(255, 255, 255, 0.95);
+  
+  /* Dark theme UI colors */
+  --header-bg: rgba(255, 255, 255, 0.1);
+  --header-border: rgba(255, 255, 255, 0.15);
+  --button-bg: rgba(0, 0, 0, 0.3);
+  --button-hover-bg: rgba(0, 0, 0, 0.5);
+  --resize-handle: rgba(255, 255, 255, 0.2);
+  --resize-handle-hover: rgba(255, 255, 255, 0.3);
+  --progress-bg: rgba(255, 255, 255, 0.2);
+  --progress-text: rgba(255, 255, 255, 0.8);
+  
+  /* Dark theme tag colors */
+  --tag-bg: rgba(0, 0, 0, 0.3);
+  --tag-border: rgba(255, 255, 255, 0.2);
+  --tag-hover-bg: rgba(0, 0, 0, 0.5);
+  --tag-hover-border: rgba(255, 255, 255, 0.3);
+  --tag-text: rgba(255, 255, 255, 0.8);
+  --tag-add-bg: rgba(0, 0, 0, 0.2);
+  --tag-add-border: rgba(255, 255, 255, 0.3);
+  --tag-input-bg: rgba(0, 0, 0, 0.6);
+  --tag-input-border: rgba(255, 255, 255, 0.3);
+  --tag-dropdown-bg: rgba(30, 30, 30, 0.95);
+  
+  /* Dark theme link colors */
+  --link-color: rgba(100, 150, 255, 0.8);
+  --link-hover-color: rgba(100, 150, 255, 1);
 }
 
 body {
@@ -56,8 +131,8 @@ body {
 
 .note-header {
   height: 32px;
-  background: rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
   cursor: move;
   -webkit-app-region: drag;
   display: flex;
@@ -86,12 +161,12 @@ body {
   font-size: 14px;
   line-height: 1.4;
   font-family: inherit;
-  color: rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
   user-select: text;
 }
 
 .note-textarea::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--text-tertiary);
 }
 
 .resize-handle {
@@ -101,14 +176,14 @@ body {
   width: 16px;
   height: 16px;
   cursor: nw-resize;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--resize-handle);
   border-top-right-radius: 4px;
   -webkit-app-region: no-drag;
   transition: background-color 0.2s ease;
 }
 
 .resize-handle:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--resize-handle-hover);
 }
 
 .header-button {
@@ -116,8 +191,8 @@ body {
   height: 20px;
   border-radius: 4px;
   border: none;
-  background: rgba(255, 255, 255, 0.6);
-  color: rgba(0, 0, 0, 0.7);
+  background: var(--button-bg);
+  color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
   display: flex;
@@ -127,7 +202,7 @@ body {
 }
 
 .header-button:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--button-hover-bg);
   transform: scale(1.05);
 }
 
@@ -146,7 +221,7 @@ body {
   overflow-y: auto;
   font-size: 14px;
   line-height: 1.4;
-  color: rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
 }
 
 .task-list {
@@ -167,7 +242,7 @@ body {
 .task-checkbox {
   width: 14px;
   height: 14px;
-  accent-color: rgba(0, 0, 0, 0.6);
+  accent-color: var(--text-secondary);
   cursor: pointer;
 }
 
@@ -247,8 +322,8 @@ body {
   bottom: 8px;
   right: 8px;
   font-size: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  color: rgba(0, 0, 0, 0.7);
+  background: var(--progress-bg);
+  color: var(--progress-text);
   padding: 2px 6px;
   border-radius: 10px;
   font-weight: 500;
@@ -256,7 +331,7 @@ body {
 
 /* Markdown prose styling */
 .prose h1, .prose h2, .prose h3 {
-  color: rgba(0, 0, 0, 0.9);
+  color: var(--text-heading);
   font-weight: 600;
 }
 
@@ -308,8 +383,8 @@ body {
 }
 
 .tag-pill {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
   border-radius: 12px;
   padding: 2px 8px;
   font-size: 10px;
@@ -321,12 +396,12 @@ body {
 }
 
 .tag-pill:hover {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(0, 0, 0, 0.2);
+  background: var(--tag-hover-bg);
+  border-color: var(--tag-hover-border);
 }
 
 .tag-text {
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--tag-text);
   line-height: 1;
 }
 
@@ -353,13 +428,13 @@ body {
 }
 
 .tag-add-button {
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px dashed rgba(0, 0, 0, 0.3);
+  background: var(--tag-add-bg);
+  border: 1px dashed var(--tag-add-border);
   border-radius: 12px;
   padding: 2px 6px;
   font-size: 10px;
   font-weight: bold;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -371,14 +446,14 @@ body {
 }
 
 .tag-add-button:hover {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(0, 0, 0, 0.4);
-  color: rgba(0, 0, 0, 0.7);
+  background: var(--tag-hover-bg);
+  border-color: var(--tag-hover-border);
+  color: var(--tag-text);
 }
 
 .tag-input {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: var(--tag-input-bg);
+  border: 1px solid var(--tag-input-border);
   border-radius: 12px;
   padding: 2px 8px;
   font-size: 10px;
@@ -389,8 +464,8 @@ body {
 }
 
 .tag-input:focus {
-  border-color: rgba(0, 0, 0, 0.4);
-  background: rgba(255, 255, 255, 1);
+  border-color: var(--tag-hover-border);
+  background: var(--tag-hover-bg);
 }
 
 .tag-suggestions {
@@ -398,7 +473,7 @@ body {
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--tag-dropdown-bg);
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -415,13 +490,13 @@ body {
   background: none;
   border: none;
   font-size: 10px;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--tag-text);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .tag-suggestion:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--tag-hover-bg);
 }
 
 .tag-suggestion:first-child {
@@ -434,7 +509,7 @@ body {
 
 /* Mention Search Styles */
 .mention-search-dropdown {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--tag-dropdown-bg);
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -450,7 +525,7 @@ body {
   padding: 12px;
   text-align: center;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -475,7 +550,7 @@ body {
 
 .mention-search-item:hover,
 .mention-search-item.selected {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--tag-hover-bg);
 }
 
 .mention-search-item:first-child {
@@ -493,14 +568,14 @@ body {
 .mention-search-title {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.9);
+  color: var(--text-heading);
   margin-bottom: 2px;
   line-height: 1.2;
 }
 
 .mention-search-content {
   font-size: 10px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-secondary);
   line-height: 1.3;
   margin-bottom: 4px;
   overflow: hidden;
@@ -515,18 +590,18 @@ body {
 }
 
 .mention-search-tag {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--tag-bg);
   border-radius: 6px;
   padding: 1px 4px;
   font-size: 9px;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--tag-text);
   line-height: 1;
 }
 
 /* Note Link Styles */
 .note-link {
-  color: rgba(0, 100, 200, 0.8);
+  color: var(--link-color);
   text-decoration: underline;
   background: none;
   border: none;
@@ -537,16 +612,16 @@ body {
 }
 
 .note-link:hover {
-  color: rgba(0, 100, 200, 1);
+  color: var(--link-hover-color);
   text-decoration: underline;
 }
 
 .external-link {
-  color: rgba(0, 100, 200, 0.8);
+  color: var(--link-color);
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .external-link:hover {
-  color: rgba(0, 100, 200, 1);
+  color: var(--link-hover-color);
 }

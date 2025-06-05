@@ -1,12 +1,18 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, nativeTheme, globalShortcut } from 'electron';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '../database/database';
+import { SystemTray } from './system-tray';
+import { SearchWindow } from './search-window';
+import { SettingsWindow } from './settings-window';
 import type { Note, CreateNoteRequest, UpdateNoteRequest } from '../types';
 
 class PostItApp {
   private database: Database;
   private noteWindows: Map<string, BrowserWindow> = new Map();
+  private systemTray: SystemTray | null = null;
+  private searchWindow: SearchWindow | null = null;
+  private settingsWindow: SettingsWindow | null = null;
 
   constructor() {
     this.database = new Database();
@@ -20,9 +26,12 @@ class PostItApp {
     });
 
     app.on('window-all-closed', () => {
-      if (process.platform !== 'darwin') {
-        app.quit();
-      }
+      // Don't quit on macOS when all windows are closed, 
+      // since we have a system tray that should keep the app running
+    });
+
+    app.on('before-quit', () => {
+      this.cleanup();
     });
 
     app.on('activate', () => {
@@ -35,6 +44,9 @@ class PostItApp {
   private async initialize() {
     await this.database.initialize();
     
+    // Initialize system tray, search, and settings windows
+    this.initializeSystemComponents();
+    
     // Load existing notes
     const existingNotes = this.database.getAllNotes();
     for (const note of existingNotes) {
@@ -45,6 +57,104 @@ class PostItApp {
     if (existingNotes.length === 0) {
       this.createNote();
     }
+    
+    // Update tray with note count
+    this.updateTrayNoteCount();
+  }
+
+  private initializeSystemComponents() {
+    // Initialize search window
+    this.searchWindow = new SearchWindow(this.database, (noteId: string) => {
+      this.focusNote(noteId);
+    });
+
+    // Initialize settings window
+    this.settingsWindow = new SettingsWindow();
+
+    // Initialize system tray
+    this.systemTray = new SystemTray(
+      () => this.createNote(),
+      () => this.searchWindow?.show(),
+      () => this.settingsWindow?.show()
+    );
+
+    // Setup theme handling
+    this.setupThemeHandling();
+
+    // Setup global shortcuts
+    this.setupGlobalShortcuts();
+  }
+
+  private setupThemeHandling() {
+    // Get initial theme from settings
+    const settings = this.settingsWindow?.getSettings();
+    if (settings) {
+      this.applyTheme(settings.theme);
+    }
+
+    // Listen for system theme changes
+    nativeTheme.on('updated', () => {
+      const settings = this.settingsWindow?.getSettings();
+      if (settings?.theme === 'system') {
+        this.notifyThemeChange();
+      }
+    });
+  }
+
+  private applyTheme(theme: 'system' | 'light' | 'dark') {
+    let effectiveTheme: 'light' | 'dark';
+    
+    if (theme === 'system') {
+      effectiveTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    } else {
+      effectiveTheme = theme;
+    }
+
+    // Update all note windows
+    this.noteWindows.forEach(window => {
+      if (!window.isDestroyed()) {
+        window.webContents.executeJavaScript(`
+          document.documentElement.setAttribute('data-theme', '${effectiveTheme}');
+        `);
+      }
+    });
+
+    // Update search and settings windows
+    this.searchWindow?.applyTheme?.(effectiveTheme);
+    this.settingsWindow?.applyTheme?.(effectiveTheme);
+  }
+
+  private notifyThemeChange() {
+    const settings = this.settingsWindow?.getSettings();
+    if (settings) {
+      this.applyTheme(settings.theme);
+    }
+  }
+
+  public handleSettingsChange(settings: any) {
+    this.applyTheme(settings.theme);
+  }
+
+  private setupGlobalShortcuts() {
+    // Register global shortcuts
+    try {
+      // Cmd/Ctrl + Shift + N - Create new note
+      globalShortcut.register('CommandOrControl+Shift+N', () => {
+        this.createNote();
+      });
+
+      // Cmd/Ctrl + Shift + F - Open search
+      globalShortcut.register('CommandOrControl+Shift+F', () => {
+        this.searchWindow?.show();
+      });
+    } catch (error) {
+      console.warn('Failed to register global shortcuts:', error);
+    }
+  }
+
+  private updateTrayNoteCount() {
+    const noteCount = this.noteWindows.size;
+    this.systemTray?.updateTrayTitle(noteCount);
   }
 
   public createNote(request: CreateNoteRequest = {}): string {
@@ -69,6 +179,7 @@ class PostItApp {
 
     this.database.createNote(note);
     this.createNoteWindow(note);
+    this.updateTrayNoteCount();
     
     return noteId;
   }
@@ -133,9 +244,18 @@ class PostItApp {
 
     noteWindow.on('closed', () => {
       this.noteWindows.delete(note.id);
+      this.updateTrayNoteCount();
     });
 
     this.noteWindows.set(note.id, noteWindow);
+
+    // Apply current theme to new window
+    noteWindow.webContents.once('dom-ready', () => {
+      const settings = this.settingsWindow?.getSettings();
+      if (settings) {
+        this.applyTheme(settings.theme);
+      }
+    });
   }
 
   public closeNote(noteId: string) {
@@ -148,6 +268,17 @@ class PostItApp {
   public deleteNote(noteId: string) {
     this.database.deleteNote(noteId);
     this.closeNote(noteId);
+    this.updateTrayNoteCount();
+  }
+
+  public focusNote(noteId: string): boolean {
+    const window = this.noteWindows.get(noteId);
+    if (window) {
+      window.focus();
+      window.show();
+      return true;
+    }
+    return false;
   }
 
   private setupIPCHandlers() {
@@ -204,16 +335,32 @@ class PostItApp {
     });
 
     ipcMain.handle('focus-note', (_, noteId: string) => {
-      const window = this.noteWindows.get(noteId);
-      if (window) {
-        window.focus();
-        window.show();
-        return true;
+      return this.focusNote(noteId);
+    });
+  }
+
+  private cleanup() {
+    // Unregister global shortcuts
+    globalShortcut.unregisterAll();
+    
+    // Clean up system tray
+    this.systemTray?.destroy();
+    
+    // Clean up search and settings windows
+    this.searchWindow?.destroy();
+    this.settingsWindow?.destroy();
+    
+    // Close all note windows
+    this.noteWindows.forEach(window => {
+      if (!window.isDestroyed()) {
+        window.close();
       }
-      return false;
     });
   }
 }
 
 // Create the application instance
-new PostItApp();
+const postItApp = new PostItApp();
+
+// Make app instance globally available for settings window
+(global as any).postItApp = postItApp;
