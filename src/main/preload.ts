@@ -20,6 +20,7 @@ const electronAPI = {
   // Window operations
   closeWindow: () => ipcRenderer.invoke('close-window'),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+  focusNote: (noteId: string) => ipcRenderer.invoke('focus-note', noteId),
 
   // Event listeners
   onNoteUpdated: (callback: (note: Note) => void) => {

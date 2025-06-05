@@ -202,6 +202,16 @@ class PostItApp {
         window.close();
       }
     });
+
+    ipcMain.handle('focus-note', (_, noteId: string) => {
+      const window = this.noteWindows.get(noteId);
+      if (window) {
+        window.focus();
+        window.show();
+        return true;
+      }
+      return false;
+    });
   }
 }
 

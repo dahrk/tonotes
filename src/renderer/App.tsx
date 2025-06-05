@@ -55,6 +55,19 @@ const App: React.FC = () => {
     }, 30000); // 30 seconds
   }, [saveNote]);
 
+  const handleNoteLink = useCallback(async (noteId: string) => {
+    try {
+      const success = await window.electronAPI.focusNote(noteId);
+      if (!success) {
+        // Note window doesn't exist, show alert
+        alert(`Note not found or not currently open: ${noteId}`);
+      }
+    } catch (error) {
+      console.error('Failed to focus note:', error);
+      alert('Failed to open linked note');
+    }
+  }, []);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const noteId = urlParams.get('noteId');
@@ -132,6 +145,7 @@ const App: React.FC = () => {
           scheduleAutoSave();
         }}
         onSave={saveNote}
+        onNoteLink={handleNoteLink}
         placeholder="Start typing..."
       />
       

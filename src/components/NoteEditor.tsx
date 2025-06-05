@@ -1,20 +1,27 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
+import MentionSearch from './MentionSearch';
 
 interface NoteEditorProps {
   content: string;
   onChange: (content: string) => void;
   onSave?: () => void;
   placeholder?: string;
+  onNoteLink?: (noteId: string) => void;
 }
 
 const NoteEditor: React.FC<NoteEditorProps> = ({
   content,
   onChange,
   onSave,
-  placeholder = "Start typing..."
+  placeholder = "Start typing...",
+  onNoteLink
 }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showMentionSearch, setShowMentionSearch] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [mentionStartPos, setMentionStartPos] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Handle keyboard shortcuts
@@ -212,6 +219,86 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     return taskLines.length > 0 ? { completed: completedTasks, total: taskLines.length } : null;
   }, [content]);
 
+  // Handle @ symbol detection and mention search
+  const detectMention = useCallback((text: string, cursorPosition: number) => {
+    const beforeCursor = text.substring(0, cursorPosition);
+    const atMatch = beforeCursor.match(/@(\w*)$/);
+    
+    if (atMatch) {
+      const query = atMatch[1];
+      const mentionStart = cursorPosition - atMatch[0].length;
+      
+      if (textareaRef.current) {
+        // Calculate position for dropdown
+        const textarea = textareaRef.current;
+        const rect = textarea.getBoundingClientRect();
+        const lineHeight = 20; // Approximate line height
+        const lines = beforeCursor.split('\n');
+        const currentLine = lines.length - 1;
+        const currentColumn = lines[lines.length - 1].length;
+        
+        setMentionPosition({
+          top: rect.top + (currentLine * lineHeight) + lineHeight,
+          left: rect.left + (currentColumn * 8) // Approximate character width
+        });
+        setMentionStartPos(mentionStart);
+        setMentionQuery(query);
+        setShowMentionSearch(true);
+      }
+    } else {
+      setShowMentionSearch(false);
+      setMentionQuery('');
+    }
+  }, []);
+
+  // Handle mention selection
+  const handleMentionSelect = useCallback((selectedNote: any) => {
+    if (!textareaRef.current) return;
+    
+    const textarea = textareaRef.current;
+    const beforeMention = content.substring(0, mentionStartPos);
+    const afterCursor = content.substring(textarea.selectionStart);
+    
+    // Create the mention link
+    const mentionText = `@${selectedNote.title || 'note'}`;
+    const mentionLink = `[@${selectedNote.title || 'note'}](note://${selectedNote.id})`;
+    
+    const newContent = beforeMention + mentionLink + afterCursor;
+    onChange(newContent);
+    
+    // Position cursor after the mention
+    setTimeout(() => {
+      if (textarea) {
+        const newPosition = beforeMention.length + mentionLink.length;
+        textarea.selectionStart = newPosition;
+        textarea.selectionEnd = newPosition;
+        textarea.focus();
+      }
+    }, 0);
+    
+    setShowMentionSearch(false);
+    setMentionQuery('');
+  }, [content, mentionStartPos, onChange]);
+
+  // Handle mention search close
+  const handleMentionClose = useCallback(() => {
+    setShowMentionSearch(false);
+    setMentionQuery('');
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
+
+  // Handle content change with mention detection
+  const handleContentChange = useCallback((newContent: string) => {
+    onChange(newContent);
+    
+    if (textareaRef.current && !isPreviewMode) {
+      const cursorPosition = textareaRef.current.selectionStart;
+      detectMention(newContent, cursorPosition);
+    }
+  }, [onChange, isPreviewMode, detectMention]);
+
   const taskProgress = getTaskProgress();
 
   if (isPreviewMode) {
@@ -230,6 +317,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
           <MarkdownRenderer 
             content={content} 
             onTaskToggle={handleTaskToggle}
+            onNoteLink={onNoteLink}
           />
         </div>
         {taskProgress && (
@@ -256,7 +344,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         ref={textareaRef}
         className="note-textarea"
         value={content}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => handleContentChange(e.target.value)}
         placeholder={placeholder}
       />
       {taskProgress && (
@@ -264,6 +352,15 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
           {taskProgress.completed}/{taskProgress.total}
         </div>
       )}
+      
+      {/* Mention search dropdown */}
+      <MentionSearch
+        position={mentionPosition}
+        query={mentionQuery}
+        onSelect={handleMentionSelect}
+        onClose={handleMentionClose}
+        isVisible={showMentionSearch}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import type { Components } from 'react-markdown';
 interface MarkdownRendererProps {
   content: string;
   onTaskToggle?: (lineIndex: number, completed: boolean) => void;
+  onNoteLink?: (noteId: string) => void;
 }
 
 interface TaskListProps {
@@ -21,7 +22,8 @@ interface TaskItemProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
-  onTaskToggle
+  onTaskToggle,
+  onNoteLink
 }) => {
   const components: Components = {
     // Custom list rendering for task lists
@@ -137,7 +139,45 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       <pre className="bg-black bg-opacity-10 p-2 rounded text-sm font-mono overflow-x-auto mb-2" {...props}>
         {children}
       </pre>
-    )
+    ),
+
+    // Custom link rendering for note links
+    a: ({ href, children, ...props }) => {
+      if (href?.startsWith('note://')) {
+        const noteId = href.replace('note://', '');
+        
+        return (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              if (onNoteLink) {
+                onNoteLink(noteId);
+              } else {
+                alert(`Link to note: ${noteId}\n(Note linking not implemented in this context)`);
+              }
+            }}
+            className="note-link"
+            title={`Link to note: ${noteId}`}
+            {...props}
+          >
+            {children}
+          </button>
+        );
+      }
+      
+      // Regular external links
+      return (
+        <a 
+          href={href} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="external-link"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    }
   };
 
   return (
