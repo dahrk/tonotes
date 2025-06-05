@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Note } from '../types';
 
 const App: React.FC = () => {
   const [note, setNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadNote = useCallback(async (noteId: string) => {
     try {
@@ -26,10 +27,26 @@ const App: React.FC = () => {
         content: note.content
       });
       setHasUnsavedChanges(false);
+      
+      // Clear auto-save timeout since we just saved
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+        autoSaveTimeoutRef.current = null;
+      }
     } catch (error) {
       console.error('Failed to save note:', error);
     }
   }, [note, hasUnsavedChanges]);
+
+  const scheduleAutoSave = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveNote();
+    }, 30000); // 30 seconds
+  }, [saveNote]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -40,6 +57,15 @@ const App: React.FC = () => {
     }
     setIsLoading(false);
   }, [loadNote]);
+
+  // Cleanup auto-save timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -60,12 +86,12 @@ const App: React.FC = () => {
   const backgroundClass = `note-${note.color}`;
 
   return (
-    <div className={`w-full h-full ${backgroundClass} shadow-lg border border-gray-300`}>
+    <div className={`note-window ${backgroundClass}`}>
       {/* Header */}
-      <div className="h-8 bg-black bg-opacity-10 flex items-center justify-between px-2 cursor-move">
-        <div className="flex items-center space-x-1">
+      <div className="note-header">
+        <div className="flex items-center space-x-2 overflow-x-auto">
           {/* Tags placeholder */}
-          <span className="text-xs bg-white bg-opacity-50 px-2 py-1 rounded-full">
+          <span className="text-xs bg-white bg-opacity-60 px-2 py-1 rounded-full whitespace-nowrap">
             sample-tag
           </span>
         </div>
@@ -74,7 +100,8 @@ const App: React.FC = () => {
           {hasUnsavedChanges && (
             <button 
               onClick={saveNote}
-              className="w-4 h-4 bg-white bg-opacity-50 rounded text-xs flex items-center justify-center hover:bg-opacity-75"
+              className="header-button"
+              title="Save note"
             >
               💾
             </button>
@@ -82,7 +109,8 @@ const App: React.FC = () => {
           {/* Close button */}
           <button 
             onClick={() => window.electronAPI.closeWindow()}
-            className="w-4 h-4 bg-red-500 bg-opacity-50 rounded text-xs flex items-center justify-center hover:bg-opacity-75"
+            className="header-button close-button"
+            title="Close note"
           >
             ×
           </button>
@@ -90,20 +118,21 @@ const App: React.FC = () => {
       </div>
       
       {/* Content */}
-      <div className="p-3 h-full">
+      <div className="note-content">
         <textarea
-          className="w-full h-full bg-transparent border-none outline-none resize-none text-sm"
+          className="note-textarea"
           value={note.content}
           onChange={(e) => {
             setNote({ ...note, content: e.target.value });
             setHasUnsavedChanges(true);
+            scheduleAutoSave();
           }}
           placeholder="Start typing..."
         />
       </div>
       
       {/* Resize handle */}
-      <div className="absolute bottom-0 left-0 w-4 h-4 cursor-nw-resize bg-gray-400 bg-opacity-50 hover:bg-opacity-75"></div>
+      <div className="resize-handle" title="Resize note"></div>
     </div>
   );
 };

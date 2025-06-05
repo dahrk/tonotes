@@ -6,6 +6,8 @@
   --color-yellow-note: #FFEB9C;
   --color-pink-note: #FFB3D9;
   --color-blue-note: #B3D9FF;
+  --shadow-note: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-note-hover: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 body {
@@ -16,6 +18,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  user-select: none;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.note-window {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: var(--shadow-note);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.note-window:hover {
+  box-shadow: var(--shadow-note-hover);
 }
 
 .note-yellow {
@@ -28,4 +52,90 @@ body {
 
 .note-blue {
   background-color: var(--color-blue-note);
+}
+
+.note-header {
+  height: 32px;
+  background: rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: move;
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+.note-header button {
+  -webkit-app-region: no-drag;
+}
+
+.note-content {
+  height: calc(100% - 32px);
+  padding: 12px;
+  overflow: hidden;
+}
+
+.note-textarea {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: inherit;
+  color: rgba(0, 0, 0, 0.8);
+  user-select: text;
+}
+
+.note-textarea::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nw-resize;
+  background: rgba(0, 0, 0, 0.1);
+  border-top-right-radius: 4px;
+  -webkit-app-region: no-drag;
+  transition: background-color 0.2s ease;
+}
+
+.resize-handle:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.header-button {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.header-button:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+.close-button {
+  background: rgba(255, 59, 48, 0.6);
+  color: white;
+}
+
+.close-button:hover {
+  background: rgba(255, 59, 48, 0.8);
 }

@@ -86,12 +86,21 @@ class PostItApp {
       resizable: true,
       minimizable: false,
       maximizable: false,
+      closable: true,
+      hasShadow: true,
+      titleBarStyle: 'hidden',
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js')
       }
     });
+
+    // Set window level for true always-on-top behavior on macOS
+    if (process.platform === 'darwin') {
+      noteWindow.setAlwaysOnTop(true, 'floating', 1);
+      noteWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    }
 
     // Load the renderer
     if (process.env.NODE_ENV === 'development') {
