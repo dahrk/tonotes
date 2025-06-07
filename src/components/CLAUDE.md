@@ -1,20 +1,37 @@
 # Components
 
 ## Purpose
-Reusable React components providing a modular and feature-rich UI architecture for the PostIt application, with comprehensive theme support and enhanced user experience features.
+Advanced React components providing a sophisticated and feature-rich UI architecture for the PostIt application, featuring dual-mode editing, drag & drop functionality, and comprehensive theme support.
 
 ## Implemented Components
 
-### Core Note Components
+### Core Editor Components
 
 #### NoteEditor.tsx
-Advanced dual-mode editor with comprehensive editing features:
-- **Editing Modes**: Plain text editing and live markdown preview with seamless switching
-- **Keyboard Shortcuts**: Tab/Shift+Tab indentation, CMD+E preview toggle, CMD+S save
-- **Auto-save**: Configurable auto-save intervals with visual feedback indicators
-- **Progress Tracking**: Real-time task completion progress with visual indicators
-- **Theme Support**: Dynamic theme switching with CSS variables
-- **Accessibility**: Full keyboard navigation and screen reader support
+Main editor component with mode switching functionality:
+- **Dual-Mode Toggle**: Switch between rich WYSIWYG editing and drag & drop line mode
+- **Mode Toggle Button**: Intuitive ⋮⋮ / 📝 button with theme-aware styling
+- **Seamless Transitions**: Smooth switching between editing modes
+- **Auto-save Integration**: Consistent auto-save across both editing modes
+- **Theme Integration**: Mode toggle respects light/dark theme preferences
+
+#### TiptapEditor.tsx
+Professional WYSIWYG editor with rich text capabilities:
+- **Tiptap Integration**: Full-featured rich text editor with markdown support
+- **Real-time Rendering**: Live HTML ↔ Markdown conversion and display
+- **Interactive Elements**: Click-to-toggle checkboxes and interactive task lists
+- **Note Linking**: @-mention system with search dropdown integration
+- **Text Wrapping**: Comprehensive word wrapping for all content types
+- **Keyboard Shortcuts**: CMD+S save, full keyboard navigation support
+
+#### DraggableLineEditor.tsx
+Advanced line-based editor with drag & drop functionality:
+- **Line-by-Line Editing**: Individual line editing with auto-resizing textareas
+- **Drag & Drop**: @dnd-kit powered line reordering with hover handles
+- **Visual Feedback**: Drag overlay showing actual content being moved
+- **Click-to-Edit**: Inline editing for individual lines with auto-focus
+- **Markdown Rendering**: Basic markdown display for headers, tasks, and lists
+- **Hover Handles**: Drag handles visible only on hover for clean interface
 
 #### MarkdownRenderer.tsx
 Custom React Markdown renderer with enhanced task list support:
@@ -25,13 +42,17 @@ Custom React Markdown renderer with enhanced task list support:
 - **Rich Formatting**: Support for headers, code blocks, links, and text formatting
 - **Theme Aware**: Proper contrast ratios and theme-appropriate styling
 
+### UI Enhancement Components
+
 #### TagInput.tsx
-Sophisticated tag management interface:
+Advanced tag management interface with scrolling and overflow handling:
+- **Scrollable Tags**: Horizontal scrolling with hidden scrollbars for clean appearance
+- **Overflow Indicators**: Dynamic fade gradients that match note color themes
+- **Smart Layout**: Fixed add button outside scroll area for persistent access
 - **Tag Creation**: Real-time tag creation with validation and deduplication
 - **Autocomplete**: Intelligent suggestions from existing tags with fuzzy matching
 - **Visual Design**: Color-coded tag pills with hover states and removal buttons
-- **Keyboard Navigation**: Full keyboard support for tag operations
-- **Integration**: Seamless integration with global tag database
+- **Theme Integration**: Fade gradients dynamically match yellow/pink/blue note themes
 
 #### MentionSearch.tsx
 Advanced @-mention search functionality:
@@ -43,9 +64,18 @@ Advanced @-mention search functionality:
 
 ## Advanced Features
 
+### Drag & Drop System
+- **@dnd-kit Integration**: Professional drag and drop with accessibility support
+- **Sortable Contexts**: Proper sortable list implementation with visual feedback
+- **Activation Constraints**: 8px movement threshold to prevent accidental drags
+- **Keyboard Support**: Full keyboard navigation for drag operations
+- **Visual Feedback**: Real-time drag overlay with content preview
+- **Smooth Animations**: CSS transforms for smooth drag transitions
+
 ### Theme Integration
 - **CSS Variables**: All components use CSS custom properties for consistent theming
 - **Dynamic Switching**: Real-time theme changes without component remounting
+- **Color-Aware Elements**: Fade gradients and UI elements adapt to note colors
 - **Accessibility**: High contrast mode support and WCAG 2.1 AA compliance
 - **Cross-Platform**: Consistent appearance across different operating systems
 
@@ -54,12 +84,16 @@ Advanced @-mention search functionality:
 - **Debounced Operations**: Intelligent debouncing for search and auto-save
 - **Efficient Updates**: Minimal re-renders through proper state management
 - **Memory Management**: Proper cleanup of event listeners and timers
+- **Auto-Resizing**: Dynamic textarea height adjustment without layout shifts
 
 ### User Experience Enhancements
-- **Visual Feedback**: Loading states, progress indicators, and status messages
+- **Visual Feedback**: Loading states, progress indicators, and drag overlays
 - **Error Handling**: Graceful error handling with user-friendly messages
-- **Responsive Design**: Adaptive layouts for different screen sizes
-- **Smooth Animations**: CSS transitions for state changes and interactions
+- **Responsive Design**: Adaptive layouts with minimum size constraints
+- **Smooth Animations**: CSS transitions for all state changes and interactions
+- **Hidden Scrollbars**: Clean interface while maintaining full scroll functionality
+- **Overflow Indicators**: Visual cues when content extends beyond visible area
+- **Auto-Focus**: Intelligent focus management for editing workflows
 
 ## Component Architecture
 

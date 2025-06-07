@@ -1,42 +1,56 @@
-# PostIt - Desktop Sticky Notes App
+# PostIt - Advanced Desktop Sticky Notes
 
-A modern macOS desktop application for creating persistent sticky notes that float on your desktop. Built with Electron, React, and TypeScript, PostIt provides a seamless note-taking experience with rich text support, organizational features, and system integration.
+A production-ready macOS desktop application for creating persistent sticky notes that float on your desktop. Built with Electron, React, and TypeScript, PostIt provides a sophisticated note-taking experience with dual-mode editing, drag & drop reordering, rich text support, and comprehensive system integration.
 
 ## Features
 
+### Advanced Editing Features
+- ✨ **Dual-Mode Editor**: Toggle between rich WYSIWYG editing and drag & drop line mode
+- 📝 **Inline WYSIWYG Editor**: Tiptap-powered rich text editing with real-time markdown rendering
+- 🔄 **Drag & Drop Reordering**: Effortlessly reorder lines with hover-visible drag handles
+- ☑️ **Interactive Checkboxes**: Click-to-toggle task completion in both editing modes
+- 📏 **Auto-Resizing Content**: Smart text wrapping and dynamic height adjustment
+- ✏️ **Click-to-Edit Lines**: Individual line editing with auto-sizing textareas
+
 ### Core Note Features
-- 🎯 **Always-on-Top Notes**: Notes stay visible above all other windows
-- 💾 **Persistent Storage**: Notes are automatically saved and survive app restarts
-- 📝 **Rich Text Support**: Markdown formatting with todo lists and nested subtasks
-- 🔗 **Note Linking**: Link between notes using @-mentions
-- 🏷️ **Tag System**: Organize notes with color-coded tags
-- 💾 **Auto-save**: Automatic saving with configurable intervals (5-300 seconds)
-- 🎨 **Color-coded Notes**: Yellow, pink, and blue note themes
+- 🎯 **Always-on-Top Notes**: Notes stay visible above all other windows with proper leveling
+- 💾 **Persistent Storage**: SQLite-backed notes that survive app restarts and crashes
+- 🔗 **Smart Note Linking**: Link between notes using @-mentions with search dropdown
+- 🏷️ **Advanced Tag System**: Scrollable, color-coded tags with overflow indicators
+- 💾 **Auto-save**: Intelligent auto-saving with visual feedback (30-second intervals)
+- 🎨 **Themed Notes**: Yellow, pink, and blue themes with dynamic fade gradients
+- 📐 **Smart Constraints**: Minimum 320x200px window size for optimal usability
 
 ### System Integration
-- 🖥️ **System Tray**: Quick access with note count display and context menu
-- 🔍 **Global Search**: Fast full-text search across all notes with instant results
-- ⚙️ **Settings Management**: Comprehensive settings with theme control and startup options
+- 🖥️ **Enhanced System Tray**: Quick access with live note count badge and context menu
+- 🔍 **Lightning-Fast Search**: Full-text search across all notes with real-time results
+- ⚙️ **Comprehensive Settings**: Theme control, startup options, and system preferences
 - ⌨️ **Global Shortcuts**: 
-  - `Cmd/Ctrl+Shift+N`: Create new note
+  - `Cmd/Ctrl+N`: Create new note (primary)
+  - `Cmd/Ctrl+Shift+N`: Create new note (backup)
   - `Cmd/Ctrl+Shift+F`: Open search window
-- 🚀 **Launch on Startup**: Optional automatic startup with system
+  - `Cmd/Ctrl+S`: Save current note
+- 🚀 **Smart Startup**: Optional automatic launch with system boot
+- 📦 **Easy Distribution**: Complete macOS app packaging with DMG and ZIP
 
-### Modern UI & Themes
-- 🌙 **Dark Mode Support**: Complete light/dark/system theme support
-- 🎨 **Modern Interface**: Clean and intuitive UI built with Tailwind CSS
-- 📱 **Responsive Design**: Optimized for different screen sizes
-- ♿ **Accessibility**: Keyboard navigation and screen reader support
+### Polished UI & Experience
+- 🌙 **Advanced Theming**: Complete light/dark/system theme support with CSS variables
+- 🎨 **Modern Interface**: Clean, intuitive UI with smooth animations and transitions
+- 📜 **Hidden Scrollbars**: Clean appearance while maintaining full scroll functionality
+- 📊 **Overflow Indicators**: Visual feedback when content extends beyond visible area
+- 🎯 **Smart Positioning**: Intelligent cascading window placement for new notes
+- 🌊 **Smooth Interactions**: Polished animations for all UI elements
 
 ## Tech Stack
 
-- **Electron**: Cross-platform desktop application framework
-- **React**: Modern UI library with TypeScript support
-- **TypeScript**: Type-safe JavaScript
-- **Vite**: Fast build tool and development server
-- **Tailwind CSS**: Utility-first CSS framework
-- **SQLite**: Local database for note persistence
-- **react-markdown**: Markdown rendering support
+- **Electron**: Cross-platform desktop application framework with native OS integration
+- **React + TypeScript**: Modern UI framework with comprehensive type safety
+- **Tiptap**: Professional WYSIWYG editor with markdown support and extensions
+- **@dnd-kit**: Modern, accessible drag and drop library for React
+- **Vite**: Lightning-fast build tool and development server
+- **Tailwind CSS**: Utility-first CSS framework with custom theme system
+- **SQLite (better-sqlite3)**: High-performance local database for note persistence
+- **Electron Builder**: Complete application packaging and distribution solution
 
 ## Getting Started
 
@@ -65,36 +79,44 @@ A modern macOS desktop application for creating persistent sticky notes that flo
 
 ### Available Scripts
 
-- `npm run dev`: Start development with hot reload
+- `npm run dev`: Start development with hot reload and debugging
 - `npm run build:all`: Build both main and renderer processes
+- `npm run build:main`: Build only the Electron main process
+- `npm run build:renderer`: Build only the React renderer
 - `npm run electron`: Run the built application
-- `npm run pack`: Create an unpacked build
-- `npm run dist`: Create a distributable package
+- `npm run pack`: Create an unpacked development build
+- `npm run dist`: Create distributable packages for current platform
+- `npm run dist:mac`: Build macOS-specific distribution (DMG + ZIP)
+- `npm run dist:all`: Build for all platforms (macOS, Windows, Linux)
 
 ## User Guide
 
 ### Getting Started
 1. **First Run**: On first launch, PostIt creates a sample note to get you started
 2. **System Tray**: Look for the PostIt icon in your system tray for quick access
-3. **Creating Notes**: Right-click the tray icon and select "New Note" or use `Cmd/Ctrl+Shift+N`
+3. **Creating Notes**: Right-click the tray icon and select "New Note" or use `Cmd/Ctrl+N`
 
 ### Using Notes
-- **Moving**: Drag notes by their header to reposition
-- **Resizing**: Use the resize handle in the bottom-left corner
-- **Markdown**: Type markdown syntax for rich formatting
-- **Todo Lists**: Use `- [ ]` for checkboxes and `- [x]` for completed items
-- **Linking**: Type `@` to search and link to other notes
-- **Tags**: Click the "+" button in the header to add organizational tags
+- **Dual Editing Modes**: Click the ⋮⋮ button to toggle between rich text and drag mode
+- **Rich Text Mode**: Full WYSIWYG editing with real-time markdown rendering
+- **Drag Mode**: Line-by-line editing with hover drag handles for reordering
+- **Moving**: Drag notes by their header to reposition on screen
+- **Resizing**: Notes resize automatically, with 320x200px minimum size
+- **Interactive Checkboxes**: Click checkboxes to toggle completion in both modes
+- **Markdown Support**: Type markdown syntax for headers, lists, and formatting
+- **Smart Linking**: Type `@` to search and link to other notes with dropdown
+- **Advanced Tags**: Scrollable tag system with overflow indicators and visual feedback
 
 ### Search & Organization
 - **Global Search**: Use `Cmd/Ctrl+Shift+F` or tray menu to search all notes
 - **Tag Filtering**: Search includes tag names for easy filtering
 - **Quick Access**: Click any search result to instantly focus that note
 
-### Customization
-- **Themes**: Access Settings to choose Light, Dark, or System theme
-- **Auto-save**: Configure save intervals from 5 seconds to 5 minutes
-- **Startup**: Enable launch on system startup for convenience
+### Customization & Settings
+- **Advanced Theming**: Choose Light, Dark, or System theme with real-time switching
+- **Auto-save**: Intelligent 30-second auto-save with visual feedback
+- **Startup Integration**: Enable launch on system startup for seamless workflow
+- **Window Behavior**: Smart cascading positioning for new notes
 
 ## Project Structure
 
@@ -111,10 +133,12 @@ src/
     main.tsx        # React entry point
     styles.css      # Global styles with theme support
   components/     # Reusable React components
-    NoteEditor.tsx    # Main note editing interface
+    NoteEditor.tsx       # Dual-mode editor with toggle functionality
+    TiptapEditor.tsx     # Rich WYSIWYG editor with Tiptap
+    DraggableLineEditor.tsx # Line-based editor with drag & drop
     MarkdownRenderer.tsx # Custom markdown with todo support
-    TagInput.tsx      # Tag management component
-    MentionSearch.tsx # @-mention search dropdown
+    TagInput.tsx         # Advanced tag management with scrolling
+    MentionSearch.tsx    # @-mention search dropdown with real-time results
   database/       # SQLite database layer
     database.ts     # Database operations and schema
   types/          # TypeScript type definitions
@@ -123,11 +147,11 @@ src/
 
 ## Database Schema
 
-The application uses SQLite for data persistence with the following structure:
+The application uses SQLite for robust data persistence with the following structure:
 
-- `notes`: Core note data (content, position, size)
-- `tags`: Tag definitions with normalized names
-- `note_tags`: Many-to-many relationship between notes and tags
+- `notes`: Core note data (content, position, size, timestamps, color themes)
+- `tags`: Tag definitions with normalized names and metadata
+- `note_tags`: Many-to-many relationship between notes and tags with referential integrity
 
 ## Development
 
@@ -145,9 +169,15 @@ The application uses SQLite for data persistence with the following structure:
    npm run build:all
    ```
 
-2. Create a distributable package:
+2. Create macOS distributable packages:
    ```bash
-   npm run dist
+   npm run dist:mac
+   ```
+   This creates both DMG and ZIP files for Intel and Apple Silicon Macs.
+
+3. Create distributable packages for all platforms:
+   ```bash
+   npm run dist:all
    ```
 
 ## Contributing

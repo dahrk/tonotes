@@ -1,7 +1,7 @@
 # PostIt App
 
 ## Project Overview
-A macOS desktop application built with Electron + React + TypeScript for creating persistent sticky notes that float on the desktop. The app displays notes as always-on-top windows without a main dashboard interface.
+A production-ready macOS desktop application built with Electron + React + TypeScript for creating persistent sticky notes that float on the desktop. The app displays notes as always-on-top windows without a main dashboard interface, featuring advanced inline editing, drag & drop reordering, and comprehensive system integration.
 
 ## Architecture Decisions
 
@@ -11,7 +11,9 @@ A macOS desktop application built with Electron + React + TypeScript for creatin
 - **Vite**: Fast build tool and development server
 - **Tailwind CSS**: Utility-first CSS framework
 - **SQLite (better-sqlite3)**: Local database for note persistence
-- **react-markdown**: Markdown rendering for rich text support
+- **Tiptap**: Rich text WYSIWYG editor with markdown support
+- **@dnd-kit**: Modern drag and drop for React
+- **@tiptap/starter-kit**: Core Tiptap extensions for rich text editing
 
 ### Project Structure
 ```
@@ -25,33 +27,50 @@ src/
 
 ## Core Features
 
+### Advanced Editing Features
+1. **Dual-Mode Editor**: Toggle between rich WYSIWYG editing and drag & drop line mode
+2. **Inline WYSIWYG Editing**: Tiptap-powered rich text editor with real-time markdown rendering
+3. **Drag & Drop Reordering**: Line-by-line drag and drop with hover-visible handles
+4. **Interactive Checkboxes**: Click-to-toggle task completion in both editing modes
+5. **Auto-Resizing Content**: Dynamic text wrapping and overflow management
+6. **Click-to-Edit Lines**: Individual line editing with auto-sizing textareas
+
 ### Note Management
-1. **Persistent Sticky Notes**: SQLite-backed notes that survive app restarts
-2. **Always-on-Top**: Notes stay visible above all other windows
-3. **Rich Text**: Markdown support with todo lists and nested subtasks
-4. **Note Linking**: @-mention system for linking between notes
-5. **Tag System**: Organize notes with color-coded tags
-6. **Auto-save**: Configurable automatic saving (5-300 seconds)
-7. **Color Themes**: Yellow, pink, and blue note color options
+7. **Persistent Sticky Notes**: SQLite-backed notes that survive app restarts
+8. **Always-on-Top**: Notes stay visible above all other windows with proper window leveling
+9. **Note Linking**: @-mention system for linking between notes with search dropdown
+10. **Tag System**: Organize notes with scrollable, color-coded tags and overflow indicators
+11. **Auto-save**: Configurable automatic saving with visual feedback (30 seconds default)
+12. **Color Themes**: Yellow, pink, and blue note color options with dynamic fade gradients
+13. **Minimum Window Constraints**: 320x200px minimum size for usability
 
 ### System Integration
-8. **System Tray**: Always-accessible tray icon with context menu and note count
-9. **Global Search**: Fast full-text search across all notes with real-time results
-10. **Settings Management**: Comprehensive settings window with theme and startup controls
-11. **Global Shortcuts**: System-wide keyboard shortcuts for common actions
-12. **Launch on Startup**: Optional automatic startup with system boot
-13. **Theme Support**: Complete light/dark/system theme support across all windows
+14. **System Tray**: Always-accessible tray icon with context menu and note count badge
+15. **Global Search**: Fast full-text search across all notes with real-time results
+16. **Settings Management**: Comprehensive settings window with theme and startup controls
+17. **Global Shortcuts**: System-wide keyboard shortcuts (CMD+N, CMD+Shift+F)
+18. **Launch on Startup**: Optional automatic startup with system boot
+19. **Theme Support**: Complete light/dark/system theme support with CSS variables
+20. **macOS Distribution**: Complete electron-builder configuration for app packaging
 
-### User Experience
-14. **No Main Window**: Clean interface with only floating notes and system tray
-15. **Keyboard Navigation**: Full keyboard accessibility and shortcuts
-16. **Error Handling**: Graceful error handling with user feedback
-17. **Performance**: Optimized search and rendering for large note collections
+### User Experience & Polish
+21. **No Main Window**: Clean interface with only floating notes and system tray
+22. **Text Wrapping**: Comprehensive word wrapping for all content types and long URLs
+23. **Hidden Scrollbars**: Clean interface with scroll functionality maintained
+24. **Overflow Indicators**: Visual feedback when content extends beyond visible area
+25. **Smooth Animations**: Polished transitions for all UI interactions
+26. **Window Positioning**: Smart cascading positioning for new notes
 
 ## Development Scripts
 - `npm run dev`: Start development with hot reload
 - `npm run build:all`: Build both main and renderer processes
+- `npm run build:main`: Build only the main Electron process
+- `npm run build:renderer`: Build only the React renderer
 - `npm run electron`: Run the built application
+- `npm run pack`: Create unpacked development build
+- `npm run dist`: Create distributable packages
+- `npm run dist:mac`: Build macOS-specific distribution (DMG + ZIP)
+- `npm run dist:all`: Build for all platforms (macOS, Windows, Linux)
 
 ## Architecture Details
 
@@ -69,16 +88,33 @@ src/
 - **Cross-Window**: Consistent theming across notes, search, and settings
 
 ### Global Shortcuts
-- `Cmd/Ctrl+Shift+N`: Create new note
+- `Cmd/Ctrl+N`: Create new note (primary shortcut)
+- `Cmd/Ctrl+Shift+N`: Create new note (backup shortcut)
 - `Cmd/Ctrl+Shift+F`: Open global search
+- `Cmd/Ctrl+S`: Save current note
 - Context menu shortcuts for common actions
+
+### Advanced Editor Architecture
+- **Dual-Mode System**: TiptapEditor for rich text, DraggableLineEditor for drag operations
+- **Real-Time Markdown**: Bidirectional HTML ↔ Markdown conversion with Tiptap
+- **Drag & Drop Integration**: @dnd-kit with sortable contexts and visual feedback
+- **Auto-Resizing Textareas**: Dynamic height adjustment during inline editing
+- **Interactive Elements**: Click-to-toggle checkboxes in both editing modes
+- **Theme-Aware Styling**: CSS variables for consistent appearance across modes
+
+### Build & Distribution
+- **Electron Builder**: Complete macOS app packaging with DMG and ZIP targets
+- **Universal Binaries**: Support for both Intel (x64) and Apple Silicon (arm64)
+- **Development Build**: Fast development iteration with Vite + Electron
+- **Production Optimization**: Minified bundles with tree-shaking and code splitting
 
 ### Error Handling
 - Input validation for all user inputs
 - Graceful degradation for system integration failures
 - Console logging for debugging without user interruption
+- Build process safety with proper main/renderer separation
 
 ## Database Schema
-- `notes`: Core note data with content, position, size
-- `tags`: Tag definitions with normalized names
-- `note_tags`: Many-to-many relationship between notes and tags
+- `notes`: Core note data with content, position, size, and timestamps
+- `tags`: Tag definitions with normalized names and metadata
+- `note_tags`: Many-to-many relationship between notes and tags with referential integrity
