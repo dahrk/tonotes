@@ -155,7 +155,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             }}
             className="note-link"
             title={`Link to note: ${noteId}`}
-            {...props}
+            type="button"
           >
             {children}
           </button>

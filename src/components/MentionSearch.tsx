@@ -43,7 +43,7 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
       
       // Score and filter notes
       const scoredResults = await Promise.all(
-        allNotes.map(async (note) => {
+        allNotes.map(async (note: Note) => {
           const noteTags = await window.electronAPI.getNoteTags(note.id);
           
           // Calculate relevance score
@@ -65,7 +65,7 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
           }
           
           // Tag match
-          const tagMatches = noteTags.filter(tag => 
+          const tagMatches = noteTags.filter((tag: Tag) => 
             tag.name.toLowerCase().includes(queryLower)
           );
           score += tagMatches.length * 50;
