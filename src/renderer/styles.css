@@ -500,6 +500,16 @@ em {
 }
 
 /* Hide scrollbar but maintain scrollability */
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollable-content {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scroll-behavior: smooth;
+}
+
 .tiptap-editor::-webkit-scrollbar {
   display: none;
 }
@@ -507,6 +517,24 @@ em {
 .tiptap-editor {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Overflow indicator */
+.overflow-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: var(--text-tertiary);
+  font-size: 16px;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 10;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
 
 /* Tag Management Styles */

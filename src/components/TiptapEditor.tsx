@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
@@ -248,11 +248,65 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     editor?.commands.focus();
   }, [editor]);
 
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Check for content overflow and scroll position
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (contentRef.current) {
+        const container = contentRef.current;
+        const hasVerticalOverflow = container.scrollHeight > container.clientHeight;
+        const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 5;
+        
+        setHasOverflow(hasVerticalOverflow);
+        setIsScrolledToBottom(isAtBottom);
+      }
+    };
+
+    const container = contentRef.current;
+    if (container) {
+      checkOverflow();
+      container.addEventListener('scroll', checkOverflow);
+      return () => container.removeEventListener('scroll', checkOverflow);
+    }
+  }, [editor]);
+
+  // Also check overflow when content changes
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (contentRef.current) {
+        const container = contentRef.current;
+        const hasVerticalOverflow = container.scrollHeight > container.clientHeight;
+        const isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 5;
+        
+        setHasOverflow(hasVerticalOverflow);
+        setIsScrolledToBottom(isAtBottom);
+      }
+    };
+
+    // Delay to allow content to render
+    setTimeout(checkOverflow, 100);
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [content]);
+
   return (
     <div className="note-content relative h-full">
-      <div className="h-full overflow-y-auto">
+      <div 
+        ref={contentRef}
+        className="h-full overflow-y-auto scrollable-content"
+      >
         <EditorContent editor={editor} />
       </div>
+      
+      {/* Overflow indicator */}
+      {hasOverflow && !isScrolledToBottom && (
+        <div className="overflow-indicator">
+          ⋯
+        </div>
+      )}
       
       {/* Mention search dropdown */}
       <MentionSearch
