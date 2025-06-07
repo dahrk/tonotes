@@ -367,9 +367,106 @@ body {
   font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
 }
 
-/* Split view border styling */
-.border-r {
-  border-right: 1px solid var(--header-border);
+/* Milkdown Editor Styling */
+.milkdown-editor {
+  height: 100%;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Override Milkdown default styles to match our theme */
+.milkdown .editor {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.milkdown .paragraph {
+  margin: 0.5em 0 !important;
+  color: var(--text-primary) !important;
+}
+
+.milkdown .heading {
+  color: var(--text-heading) !important;
+  font-weight: 600 !important;
+}
+
+.milkdown .code-inline {
+  background: var(--header-bg) !important;
+  color: var(--text-primary) !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
+}
+
+.milkdown .code-block {
+  background: var(--header-bg) !important;
+  color: var(--text-primary) !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
+}
+
+.milkdown .task-list-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  margin: 4px 0 !important;
+}
+
+.milkdown .task-list-item input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  accent-color: var(--text-secondary) !important;
+}
+
+.milkdown .task-list-item.checked {
+  opacity: 0.6 !important;
+}
+
+.milkdown .task-list-item.checked .task-content {
+  text-decoration: line-through !important;
+  color: var(--text-secondary) !important;
+}
+
+.milkdown .link {
+  color: var(--link-color) !important;
+  text-decoration: underline !important;
+}
+
+.milkdown .link:hover {
+  color: var(--link-hover-color) !important;
+}
+
+.milkdown .strong {
+  font-weight: 600 !important;
+  color: var(--text-heading) !important;
+}
+
+.milkdown .emphasis {
+  font-style: italic !important;
+}
+
+/* Hide scrollbar but maintain scrollability */
+.milkdown-editor::-webkit-scrollbar {
+  display: none;
+}
+
+.milkdown-editor {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 /* Tag Management Styles */
