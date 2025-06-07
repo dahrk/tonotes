@@ -367,8 +367,8 @@ body {
   font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
 }
 
-/* Milkdown Editor Styling */
-.milkdown-editor {
+/* Tiptap Editor Styling */
+.tiptap-editor {
   height: 100%;
   width: 100%;
   padding: 12px;
@@ -383,88 +383,128 @@ body {
     sans-serif;
 }
 
-/* Override Milkdown default styles to match our theme */
-.milkdown .editor {
-  background: transparent !important;
-  color: var(--text-primary) !important;
-  border: none !important;
-  outline: none !important;
+/* Tiptap content styling */
+.tiptap-paragraph {
+  margin: 0.5em 0;
+  color: var(--text-primary);
 }
 
-.milkdown .paragraph {
-  margin: 0.5em 0 !important;
-  color: var(--text-primary) !important;
+.tiptap-paragraph:first-child {
+  margin-top: 0;
 }
 
-.milkdown .heading {
-  color: var(--text-heading) !important;
-  font-weight: 600 !important;
+.tiptap-paragraph:last-child {
+  margin-bottom: 0;
 }
 
-.milkdown .code-inline {
-  background: var(--header-bg) !important;
-  color: var(--text-primary) !important;
-  padding: 2px 4px !important;
-  border-radius: 3px !important;
-  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
+.tiptap-heading {
+  color: var(--text-heading);
+  font-weight: 600;
+  margin: 0.75em 0 0.5em 0;
 }
 
-.milkdown .code-block {
-  background: var(--header-bg) !important;
-  color: var(--text-primary) !important;
-  padding: 8px !important;
-  border-radius: 6px !important;
-  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace !important;
+.tiptap-code-inline {
+  background: var(--header-bg);
+  color: var(--text-primary);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+  font-size: 0.9em;
 }
 
-.milkdown .task-list-item {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 8px !important;
-  margin: 4px 0 !important;
+.tiptap-code-block {
+  background: var(--header-bg);
+  color: var(--text-primary);
+  padding: 12px;
+  border-radius: 6px;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+  margin: 1em 0;
+  overflow-x: auto;
 }
 
-.milkdown .task-list-item input[type="checkbox"] {
-  width: 16px !important;
-  height: 16px !important;
-  margin: 0 !important;
-  cursor: pointer !important;
-  accent-color: var(--text-secondary) !important;
+.tiptap-task-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5em 0;
 }
 
-.milkdown .task-list-item.checked {
-  opacity: 0.6 !important;
+.tiptap-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
 }
 
-.milkdown .task-list-item.checked .task-content {
-  text-decoration: line-through !important;
-  color: var(--text-secondary) !important;
+.tiptap-task-item > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
 }
 
-.milkdown .link {
-  color: var(--link-color) !important;
-  text-decoration: underline !important;
+.tiptap-task-item > label > input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--text-secondary);
 }
 
-.milkdown .link:hover {
-  color: var(--link-hover-color) !important;
+.tiptap-task-item[data-checked="true"] {
+  opacity: 0.6;
 }
 
-.milkdown .strong {
-  font-weight: 600 !important;
-  color: var(--text-heading) !important;
+.tiptap-task-item[data-checked="true"] > label > div {
+  text-decoration: line-through;
+  color: var(--text-secondary);
 }
 
-.milkdown .emphasis {
-  font-style: italic !important;
+.tiptap-link {
+  color: var(--link-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap-link:hover {
+  color: var(--link-hover-color);
+}
+
+.tiptap-bullet-list,
+.tiptap-ordered-list {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.tiptap-list-item {
+  margin: 2px 0;
+}
+
+/* Strong and emphasis */
+strong {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+em {
+  font-style: italic;
+}
+
+/* Placeholder styling */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  height: 0;
 }
 
 /* Hide scrollbar but maintain scrollability */
-.milkdown-editor::-webkit-scrollbar {
+.tiptap-editor::-webkit-scrollbar {
   display: none;
 }
 
-.milkdown-editor {
+.tiptap-editor {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }

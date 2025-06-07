@@ -1,5 +1,5 @@
 import React from 'react';
-import MilkdownEditor from './MilkdownEditor';
+import TiptapEditor from './TiptapEditor';
 
 interface NoteEditorProps {
   content: string;
@@ -17,7 +17,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
   onNoteLink
 }) => {
   return (
-    <MilkdownEditor
+    <TiptapEditor
       content={content}
       onChange={onChange}
       onSave={onSave}
