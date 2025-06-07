@@ -107,20 +107,25 @@ const App: React.FC = () => {
 
   return (
     <div className={`note-window ${backgroundClass}`}>
-      {/* Header */}
+      {/* Header with proper spacing for macOS traffic lights */}
       <div className="note-header">
-        <TagInput
-          noteId={note.id}
-          tags={tags}
-          onTagsChange={setTags}
-        />
+        {/* Left side with space for traffic lights */}
+        <div className="flex items-center" style={{ marginLeft: '70px' }}>
+          <TagInput
+            noteId={note.id}
+            tags={tags}
+            onTagsChange={setTags}
+          />
+        </div>
+        
+        {/* Right side controls */}
         <div className="flex items-center space-x-1">
           {/* Save button */}
           {hasUnsavedChanges && (
             <button 
               onClick={saveNote}
               className="header-button"
-              title="Save note"
+              title="Save note (Cmd+S)"
             >
               💾
             </button>

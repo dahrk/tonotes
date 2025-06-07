@@ -17,12 +17,12 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
   placeholder = "Start typing...",
   onNoteLink
 }) => {
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showMentionSearch, setShowMentionSearch] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const [mentionStartPos, setMentionStartPos] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -32,15 +32,9 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         e.preventDefault();
         onSave?.();
       }
-      
-      // CMD+E to toggle preview
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        setIsPreviewMode(prev => !prev);
-      }
 
-      // Enter key handling for task lists
-      if (!isPreviewMode && textareaRef.current && e.key === 'Enter') {
+      // Enter key handling for automatic indentation and task lists
+      if (textareaRef.current && e.key === 'Enter') {
         const textarea = textareaRef.current;
         const start = textarea.selectionStart;
         const lines = content.split('\n');
@@ -58,21 +52,22 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         }
         
         const currentLine = lines[currentLineIndex];
+        
+        // Check if it's a task line
         const taskMatch = currentLine.match(/^(\s*)([-*+])\s+(\[[ x]\])?\s*(.*)/);
         
         if (taskMatch) {
-          const [, indentation, marker, checkbox, content] = taskMatch;
+          const [, indentation, marker, checkbox, taskContent] = taskMatch;
           
-          // If the task content is empty, remove the task marker
-          if (!content.trim()) {
+          // If the task content is empty, remove the task marker and just maintain indentation
+          if (!taskContent.trim()) {
             e.preventDefault();
             const newLines = [...lines];
-            newLines[currentLineIndex] = indentation; // Just keep indentation
+            newLines[currentLineIndex] = indentation;
             
             const newContent = newLines.join('\n');
             onChange(newContent);
             
-            // Position cursor at end of line
             setTimeout(() => {
               if (textarea) {
                 const newPos = lines.slice(0, currentLineIndex).join('\n').length + 
@@ -94,7 +89,6 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
           const newContent = beforeCursor + '\n' + newTaskLine + afterCursor;
           onChange(newContent);
           
-          // Position cursor after the new task marker
           setTimeout(() => {
             if (textarea) {
               const newPos = start + 1 + newTaskLine.length;
@@ -103,11 +97,33 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
               textarea.focus();
             }
           }, 0);
+        } else {
+          // Regular line - maintain indentation
+          const indentMatch = currentLine.match(/^(\s*)/);
+          const indentation = indentMatch ? indentMatch[1] : '';
+          
+          if (indentation) {
+            e.preventDefault();
+            const beforeCursor = content.substring(0, start);
+            const afterCursor = content.substring(start);
+            
+            const newContent = beforeCursor + '\n' + indentation + afterCursor;
+            onChange(newContent);
+            
+            setTimeout(() => {
+              if (textarea) {
+                const newPos = start + 1 + indentation.length;
+                textarea.selectionStart = newPos;
+                textarea.selectionEnd = newPos;
+                textarea.focus();
+              }
+            }, 0);
+          }
         }
       }
 
-      // Tab and Shift+Tab for indentation (when in edit mode)
-      if (!isPreviewMode && textareaRef.current && (e.key === 'Tab')) {
+      // Tab and Shift+Tab for indentation
+      if (textareaRef.current && e.key === 'Tab') {
         e.preventDefault();
         const textarea = textareaRef.current;
         const start = textarea.selectionStart;
@@ -127,55 +143,31 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
             endLine = i;
             break;
           }
-          currentPos += lines[i].length + 1; // +1 for newline
+          currentPos += lines[i].length + 1;
         }
 
-        // Modify the selected lines
         const newLines = [...lines];
         let selectionOffset = 0;
 
         for (let i = startLine; i <= endLine; i++) {
           const line = newLines[i];
-          const isTaskLine = line.trim().match(/^[-*+]\s+(\[[ x]\])?\s*/);
           
           if (e.shiftKey) {
             // Remove indentation (Shift+Tab)
-            if (isTaskLine) {
-              // For task lines, remove 2 spaces but keep the list marker
-              if (line.startsWith('  ')) {
-                newLines[i] = line.substring(2);
-                if (i === startLine) selectionOffset -= 2;
-              }
-            } else {
-              // For regular lines, remove 2 spaces
-              if (line.startsWith('  ')) {
-                newLines[i] = line.substring(2);
-                if (i === startLine) selectionOffset -= 2;
-              }
+            if (line.startsWith('  ')) {
+              newLines[i] = line.substring(2);
+              if (i === startLine) selectionOffset -= 2;
             }
           } else {
             // Add indentation (Tab)
-            if (isTaskLine) {
-              // Check current indentation level
-              const leadingSpaces = line.match(/^(\s*)/)?.[1].length || 0;
-              
-              // Limit to 2 levels of indentation (0, 2, 4 spaces)
-              if (leadingSpaces < 4) {
-                newLines[i] = '  ' + line;
-                if (i === startLine) selectionOffset += 2;
-              }
-            } else {
-              // For regular lines, add 2 spaces
-              newLines[i] = '  ' + line;
-              if (i === startLine) selectionOffset += 2;
-            }
+            newLines[i] = '  ' + line;
+            if (i === startLine) selectionOffset += 2;
           }
         }
 
         const newContent = newLines.join('\n');
         onChange(newContent);
 
-        // Restore cursor position
         setTimeout(() => {
           if (textarea) {
             textarea.selectionStart = start + selectionOffset;
@@ -188,7 +180,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [content, isPreviewMode, onChange, onSave]);
+  }, [content, onChange, onSave]);
 
   // Handle task toggle from markdown renderer
   const handleTaskToggle = useCallback((lineIndex: number, completed: boolean) => {
@@ -229,17 +221,16 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
       const mentionStart = cursorPosition - atMatch[0].length;
       
       if (textareaRef.current) {
-        // Calculate position for dropdown
         const textarea = textareaRef.current;
         const rect = textarea.getBoundingClientRect();
-        const lineHeight = 20; // Approximate line height
+        const lineHeight = 20;
         const lines = beforeCursor.split('\n');
         const currentLine = lines.length - 1;
         const currentColumn = lines[lines.length - 1].length;
         
         setMentionPosition({
           top: rect.top + (currentLine * lineHeight) + lineHeight,
-          left: rect.left + (currentColumn * 8) // Approximate character width
+          left: rect.left + (currentColumn * 8)
         });
         setMentionStartPos(mentionStart);
         setMentionQuery(query);
@@ -259,14 +250,10 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     const beforeMention = content.substring(0, mentionStartPos);
     const afterCursor = content.substring(textarea.selectionStart);
     
-    // Create the mention link
-    const mentionText = `@${selectedNote.title || 'note'}`;
     const mentionLink = `[@${selectedNote.title || 'note'}](note://${selectedNote.id})`;
-    
     const newContent = beforeMention + mentionLink + afterCursor;
     onChange(newContent);
     
-    // Position cursor after the mention
     setTimeout(() => {
       if (textarea) {
         const newPosition = beforeMention.length + mentionLink.length;
@@ -280,7 +267,6 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     setMentionQuery('');
   }, [content, mentionStartPos, onChange]);
 
-  // Handle mention search close
   const handleMentionClose = useCallback(() => {
     setShowMentionSearch(false);
     setMentionQuery('');
@@ -289,64 +275,44 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     }
   }, []);
 
-  // Handle content change with mention detection
   const handleContentChange = useCallback((newContent: string) => {
     onChange(newContent);
     
-    if (textareaRef.current && !isPreviewMode) {
+    if (textareaRef.current) {
       const cursorPosition = textareaRef.current.selectionStart;
       detectMention(newContent, cursorPosition);
     }
-  }, [onChange, isPreviewMode, detectMention]);
+  }, [onChange, detectMention]);
 
   const taskProgress = getTaskProgress();
 
-  if (isPreviewMode) {
-    return (
-      <div className="note-content relative">
-        <div className="absolute top-2 right-2 z-10">
-          <button
-            onClick={() => setIsPreviewMode(false)}
-            className="preview-toggle-button"
-            title="Edit mode (CMD+E)"
-          >
-            ✏️
-          </button>
+  return (
+    <div ref={containerRef} className="note-content relative">
+      {/* Split view: textarea on left, markdown on right */}
+      <div className="h-full flex">
+        {/* Textarea for editing */}
+        <div className="w-1/2 h-full relative">
+          <textarea
+            ref={textareaRef}
+            className="note-textarea border-r border-black border-opacity-10"
+            value={content}
+            onChange={(e) => handleContentChange(e.target.value)}
+            placeholder={placeholder}
+            style={{ resize: 'none' }}
+          />
         </div>
-        <div className="h-full overflow-y-auto pr-8">
+        
+        {/* Markdown preview */}
+        <div className="w-1/2 h-full overflow-y-auto pl-3">
           <MarkdownRenderer 
             content={content} 
             onTaskToggle={handleTaskToggle}
             onNoteLink={onNoteLink}
           />
         </div>
-        {taskProgress && (
-          <div className="absolute bottom-2 right-2 text-xs bg-black bg-opacity-20 px-2 py-1 rounded">
-            {taskProgress.completed}/{taskProgress.total}
-          </div>
-        )}
       </div>
-    );
-  }
-
-  return (
-    <div className="note-content relative">
-      <div className="absolute top-2 right-2 z-10">
-        <button
-          onClick={() => setIsPreviewMode(true)}
-          className="preview-toggle-button"
-          title="Preview mode (CMD+E)"
-        >
-          👁️
-        </button>
-      </div>
-      <textarea
-        ref={textareaRef}
-        className="note-textarea"
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-        placeholder={placeholder}
-      />
+      
+      {/* Task progress indicator */}
       {taskProgress && (
         <div className="absolute bottom-2 right-2 text-xs bg-black bg-opacity-20 px-2 py-1 rounded">
           {taskProgress.completed}/{taskProgress.total}

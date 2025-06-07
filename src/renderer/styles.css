@@ -160,9 +160,12 @@ body {
   resize: none;
   font-size: 14px;
   line-height: 1.4;
-  font-family: inherit;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
   color: var(--text-primary);
   user-select: text;
+  padding: 8px;
+  tab-size: 2;
+  white-space: pre-wrap;
 }
 
 .note-textarea::placeholder {
@@ -364,11 +367,9 @@ body {
   font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
 }
 
-/* Better textarea for markdown editing */
-.note-textarea {
-  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
-  tab-size: 2;
-  white-space: pre-wrap;
+/* Split view border styling */
+.border-r {
+  border-right: 1px solid var(--header-border);
 }
 
 /* Tag Management Styles */

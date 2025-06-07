@@ -199,7 +199,8 @@ class PostItApp {
       maximizable: false,
       closable: true,
       hasShadow: true,
-      titleBarStyle: 'hidden',
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 8, y: 8 },
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,

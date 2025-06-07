@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 
 interface MarkdownRendererProps {
@@ -8,73 +9,69 @@ interface MarkdownRendererProps {
   onNoteLink?: (noteId: string) => void;
 }
 
-interface TaskListProps {
-  ordered?: boolean;
-  children: React.ReactNode;
-  depth?: number;
-}
-
-interface TaskItemProps {
-  checked?: boolean;
-  children: React.ReactNode;
-  index?: number;
-}
-
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   onTaskToggle,
   onNoteLink
 }) => {
   const components: Components = {
-    // Custom list rendering for task lists
-    ul: ({ children, ...props }: TaskListProps) => {
-      const depth = (props as any)?.depth || 0;
+    // Custom list rendering
+    ul: ({ children, ...props }) => {
       return (
-        <ul className={`task-list space-y-1 ${depth > 0 ? 'nested-task-list' : ''}`} {...props}>
+        <ul className="task-list space-y-1" {...props}>
           {children}
         </ul>
       );
     },
     
-    // Custom list item rendering for tasks
+    // Custom list item rendering for tasks with improved checkbox detection
     li: ({ children, ...props }: any) => {
-      const isTaskItem = typeof children === 'object' && 
-        Array.isArray(children) && 
-        children.some(child => 
-          typeof child === 'object' && 
-          child?.type === 'input' && 
-          child?.props?.type === 'checkbox'
-        );
+      // Check if this is a task item by looking for checkbox patterns
+      const isTaskItem = React.Children.toArray(children).some((child: any) => 
+        child?.type === 'input' && child?.props?.type === 'checkbox'
+      );
 
       if (isTaskItem) {
-        const checkbox = children.find((child: any) => 
-          typeof child === 'object' && 
-          child?.type === 'input' && 
-          child?.props?.type === 'checkbox'
-        );
+        // Find the checkbox element
+        const checkbox = React.Children.toArray(children).find((child: any) => 
+          child?.type === 'input' && child?.props?.type === 'checkbox'
+        ) as any;
         
-        const textContent = children.filter((child: any) => 
-          typeof child === 'string' || 
-          (typeof child === 'object' && child?.type !== 'input')
+        // Get the text content (everything that's not the checkbox)
+        const textContent = React.Children.toArray(children).filter((child: any) => 
+          !(child?.type === 'input' && child?.props?.type === 'checkbox')
         );
 
         const isChecked = checkbox?.props?.checked || false;
+        
+        // Find the line index by matching content
+        const handleToggle = () => {
+          if (onTaskToggle) {
+            const lines = content.split('\n');
+            // Extract text content as string for matching
+            const taskText = React.Children.toArray(textContent)
+              .map(child => typeof child === 'string' ? child : '')
+              .join('')
+              .trim();
+            
+            // Find the line that contains this task
+            const lineIndex = lines.findIndex(line => {
+              const cleanLine = line.replace(/^\s*[-*+]\s*\[[ x]\]\s*/, '').trim();
+              return cleanLine === taskText || line.includes(taskText);
+            });
+            
+            if (lineIndex !== -1) {
+              onTaskToggle(lineIndex, !isChecked);
+            }
+          }
+        };
         
         return (
           <li className={`task-item flex items-start space-x-2 ${isChecked ? 'completed' : ''}`} {...props}>
             <input
               type="checkbox"
               checked={isChecked}
-              onChange={(e) => {
-                if (onTaskToggle) {
-                  // Find line index - this is a simplified approach
-                  const lines = content.split('\n');
-                  const lineIndex = lines.findIndex(line => 
-                    line.includes(textContent.join('').trim())
-                  );
-                  onTaskToggle(lineIndex, e.target.checked);
-                }
-              }}
+              onChange={handleToggle}
               className="task-checkbox mt-0.5 flex-shrink-0"
             />
             <span className={`task-content flex-1 ${isChecked ? 'line-through text-gray-500' : ''}`}>
@@ -177,14 +174,46 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           {children}
         </a>
       );
-    }
+    },
+
+    // Custom blockquote rendering
+    blockquote: ({ children, ...props }) => (
+      <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-2" {...props}>
+        {children}
+      </blockquote>
+    ),
+
+    // Custom table rendering
+    table: ({ children, ...props }) => (
+      <table className="min-w-full border-collapse border border-gray-300 my-2" {...props}>
+        {children}
+      </table>
+    ),
+
+    th: ({ children, ...props }) => (
+      <th className="border border-gray-300 px-2 py-1 bg-gray-100 font-semibold text-left" {...props}>
+        {children}
+      </th>
+    ),
+
+    td: ({ children, ...props }) => (
+      <td className="border border-gray-300 px-2 py-1" {...props}>
+        {children}
+      </td>
+    ),
+
+    // Custom hr rendering
+    hr: ({ ...props }) => (
+      <hr className="my-4 border-gray-300" {...props} />
+    )
   };
 
   return (
     <div className="markdown-content prose prose-sm max-w-none">
       <ReactMarkdown 
         components={components}
-        skipHtml={true}
+        remarkPlugins={[remarkGfm]}
+        skipHtml={false}
       >
         {content}
       </ReactMarkdown>
