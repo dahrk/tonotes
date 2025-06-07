@@ -17,20 +17,44 @@
     "dist": "electron-builder",
     "dist:mac": "npm run build:all && electron-builder --mac",
     "dist:all": "npm run build:all && electron-builder --mac --win --linux",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "clean": "rm -rf dist/ release/ node_modules/.cache",
+    "build:clean": "npm run clean && npm run build:all"
   },
   "build": {
     "appId": "com.example.tonotes",
-    "productName": "PostIt Notes",
+    "productName": "Sticky Notes",
+    "compression": "maximum",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme,*.md}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*/{docs,doc,website,images,assets}",
+      "!**/node_modules/*/{*.flow,*.webidl,*.map}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/node_modules/**/man",
+      "!**/node_modules/**/coverage",
+      "!.editorconfig",
+      "!**/._*",
+      "!src/**/*",
+      "!*.config.*",
+      "!tsconfig*.json"
     ],
     "mac": {
       "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "darkModeSupport": true,
       "target": [
         {
           "target": "dmg",
@@ -38,25 +62,15 @@
             "x64",
             "arm64"
           ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
         }
       ],
-      "darkModeSupport": true,
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
       "extendInfo": {
         "LSUIElement": false,
         "NSRequiresAquaSystemAppearance": false
       }
     },
     "dmg": {
-      "title": "PostIt Notes",
+      "title": "Sticky Notes",
       "iconSize": 100,
       "contents": [
         {
@@ -94,14 +108,11 @@
     "electron-rebuild": "^3.2.9",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8",
+    "terser": "^5.41.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@tiptap/extension-dropcursor": "^2.14.0",
     "@tiptap/extension-link": "^2.14.0",
     "@tiptap/extension-placeholder": "^2.14.0",
     "@tiptap/extension-task-item": "^2.14.0",
@@ -115,8 +126,6 @@
     "better-sqlite3": "^11.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1",
     "uuid": "^11.1.0"
   }
 }

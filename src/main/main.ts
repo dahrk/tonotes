@@ -7,6 +7,11 @@ import { SearchWindow } from './search-window';
 import { SettingsWindow } from './settings-window';
 import type { Note, CreateNoteRequest, UpdateNoteRequest } from '../types';
 
+// Disable unused Electron features for smaller bundle
+app.commandLine.appendSwitch('disable-features', 'SpellChecker,PrintPreview,MediaRouter');
+app.commandLine.appendSwitch('disable-http-cache');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+
 class PostItApp {
   private database: Database;
   private noteWindows: Map<string, BrowserWindow> = new Map();
@@ -223,7 +228,12 @@ class PostItApp {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js')
+        webSecurity: true,
+        allowRunningInsecureContent: false,
+        preload: path.join(__dirname, 'preload.js'),
+        devTools: process.env.NODE_ENV === 'development',
+        enableBlinkFeatures: '',
+        disableBlinkFeatures: 'AutomationControlled'
       }
     });
 

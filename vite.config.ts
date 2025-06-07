@@ -9,8 +9,21 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: '.',
     emptyOutDir: false,
+    minify: 'terser',
     rollupOptions: {
-      external: ['electron']
+      external: ['electron'],
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          tiptap: ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-task-list', '@tiptap/extension-task-item']
+        }
+      }
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
     }
   },
   resolve: {

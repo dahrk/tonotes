@@ -6,7 +6,6 @@ import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
 import Typography from '@tiptap/extension-typography';
 import Placeholder from '@tiptap/extension-placeholder';
-import Dropcursor from '@tiptap/extension-dropcursor';
 import MentionSearch from './MentionSearch';
 
 interface TiptapEditorProps {
@@ -95,10 +94,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         placeholder,
         showOnlyWhenEditable: true,
       }),
-      Dropcursor.configure({
-        color: '#3b82f6',
-        width: 2,
-      }),
     ],
     content: content,
     editorProps: {
@@ -115,6 +110,39 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
             event.preventDefault();
             const noteId = href.replace('note://', '');
             onNoteLink(noteId);
+            return true;
+          }
+        }
+        return false;
+      },
+      handleKeyDown: (view, event) => {
+        // Handle Tab for indentation
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          const { state, dispatch } = view;
+          const { selection } = state;
+          const { from, to } = selection;
+          
+          if (event.shiftKey) {
+            // Shift+Tab: Remove indentation (unindent)
+            const tr = state.tr;
+            const textBefore = state.doc.textBetween(Math.max(0, from - 10), from);
+            
+            // Check if we can remove indentation (look for 2 spaces at start of line)
+            const lineStart = textBefore.lastIndexOf('\n') + 1;
+            const beforeLineStart = from - (textBefore.length - lineStart);
+            const lineText = state.doc.textBetween(beforeLineStart, to);
+            
+            if (lineText.startsWith('  ')) {
+              // Remove 2 spaces
+              tr.delete(beforeLineStart, beforeLineStart + 2);
+              dispatch(tr);
+              return true;
+            }
+          } else {
+            // Tab: Add indentation (indent)
+            const tr = state.tr.insertText('  ', from); // Insert 2 spaces
+            dispatch(tr);
             return true;
           }
         }
