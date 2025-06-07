@@ -909,3 +909,76 @@ em {
 .external-link:hover {
   color: var(--link-hover-color);
 }
+
+/* Draggable Line Editor Styles */
+.line-wrapper {
+  position: relative;
+  margin: 2px 0;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.line-wrapper:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .line-wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.drag-handle {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  user-select: none;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.drag-handle:hover {
+  color: var(--text-secondary);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .drag-handle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.line-content {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.line-content textarea {
+  color: var(--text-primary);
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.line-content textarea:focus {
+  background-color: var(--header-bg);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Mode toggle button */
+.mode-toggle {
+  background: var(--button-bg);
+  border: 1px solid var(--header-border);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.mode-toggle:hover {
+  background: var(--button-hover-bg);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
