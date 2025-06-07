@@ -6,6 +6,7 @@ import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
 import Typography from '@tiptap/extension-typography';
 import Placeholder from '@tiptap/extension-placeholder';
+import Dropcursor from '@tiptap/extension-dropcursor';
 import MentionSearch from './MentionSearch';
 
 interface TiptapEditorProps {
@@ -93,6 +94,10 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
+      }),
+      Dropcursor.configure({
+        color: '#3b82f6',
+        width: 2,
       }),
     ],
     content: content,

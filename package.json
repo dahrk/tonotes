@@ -36,6 +36,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@tiptap/extension-dropcursor": "^2.14.0",
     "@tiptap/extension-link": "^2.14.0",
     "@tiptap/extension-placeholder": "^2.14.0",
     "@tiptap/extension-task-item": "^2.14.0",

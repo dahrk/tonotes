@@ -549,7 +549,19 @@ em {
   display: none;
 }
 
-/* Fade gradient for overflowing tags */
+/* Fade gradient for overflowing tags - dynamic based on note color */
+.note-yellow .tag-scrollable-container::after {
+  background: linear-gradient(to right, transparent, var(--color-yellow-note));
+}
+
+.note-pink .tag-scrollable-container::after {
+  background: linear-gradient(to right, transparent, var(--color-pink-note));
+}
+
+.note-blue .tag-scrollable-container::after {
+  background: linear-gradient(to right, transparent, var(--color-blue-note));
+}
+
 .tag-scrollable-container::after {
   content: '';
   position: absolute;
