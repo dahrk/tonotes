@@ -138,7 +138,12 @@ class PostItApp {
   private setupGlobalShortcuts() {
     // Register global shortcuts
     try {
-      // Cmd/Ctrl + Shift + N - Create new note
+      // Cmd/Ctrl + N - Create new note (standard shortcut)
+      globalShortcut.register('CommandOrControl+N', () => {
+        this.createNote();
+      });
+
+      // Cmd/Ctrl + Shift + N - Create new note (backup)
       globalShortcut.register('CommandOrControl+Shift+N', () => {
         this.createNote();
       });
@@ -165,14 +170,19 @@ class PostItApp {
     const colors: Array<'yellow' | 'pink' | 'blue'> = ['yellow', 'pink', 'blue'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     
+    // Center new notes on screen with slight offset for multiple notes
+    const baseX = Math.floor(screenWidth / 2 - 200);
+    const baseY = Math.floor(screenHeight / 2 - 200);
+    const offset = this.noteWindows.size * 30; // Offset each new note by 30px
+    
     const note: Note = {
       id: noteId,
       content: request.content || '',
       color: request.color || randomColor,
-      position_x: request.position_x || Math.floor(screenWidth / 2 - 150),
-      position_y: request.position_y || Math.floor(screenHeight / 2 - 150),
-      width: 300,
-      height: 300,
+      position_x: request.position_x || Math.min(baseX + offset, screenWidth - 400),
+      position_y: request.position_y || Math.min(baseY + offset, screenHeight - 400),
+      width: 400,
+      height: 400,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -180,6 +190,13 @@ class PostItApp {
     this.database.createNote(note);
     this.createNoteWindow(note);
     this.updateTrayNoteCount();
+    
+    // Focus the new note window
+    const newWindow = this.noteWindows.get(noteId);
+    if (newWindow) {
+      newWindow.focus();
+      newWindow.show();
+    }
     
     return noteId;
   }
@@ -190,6 +207,8 @@ class PostItApp {
       y: note.position_y,
       width: note.width,
       height: note.height,
+      minWidth: 320,  // Enough for: tags + buttons + padding
+      minHeight: 200, // Enough for: header + some content
       frame: false,
       transparent: false,
       alwaysOnTop: true,

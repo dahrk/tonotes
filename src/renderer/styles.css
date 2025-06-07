@@ -149,6 +149,8 @@ body {
   height: calc(100% - 32px);
   padding: 12px;
   overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .note-textarea {
@@ -179,14 +181,14 @@ body {
   width: 16px;
   height: 16px;
   cursor: nw-resize;
-  background: var(--resize-handle);
+  background: transparent;
   border-top-right-radius: 4px;
   -webkit-app-region: no-drag;
   transition: background-color 0.2s ease;
 }
 
 .resize-handle:hover {
-  background: var(--resize-handle-hover);
+  background: transparent;
 }
 
 .header-button {
@@ -381,12 +383,20 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-x: hidden;
 }
 
 /* Tiptap content styling */
 .tiptap-paragraph {
   margin: 0.5em 0;
   color: var(--text-primary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .tiptap-paragraph:first-child {
@@ -401,6 +411,9 @@ body {
   color: var(--text-heading);
   font-weight: 600;
   margin: 0.75em 0 0.5em 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .tiptap-code-inline {
@@ -410,6 +423,8 @@ body {
   border-radius: 3px;
   font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
   font-size: 0.9em;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .tiptap-code-block {
@@ -419,7 +434,10 @@ body {
   border-radius: 6px;
   font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
   margin: 1em 0;
-  overflow-x: auto;
+  overflow-x: hidden;
+  word-break: break-all;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .tiptap-task-list {
@@ -464,6 +482,8 @@ body {
   color: var(--link-color);
   text-decoration: underline;
   cursor: pointer;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .tiptap-link:hover {
@@ -478,6 +498,9 @@ body {
 
 .tiptap-list-item {
   margin: 2px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Strong and emphasis */
@@ -488,6 +511,20 @@ strong {
 
 em {
   font-style: italic;
+}
+
+/* ProseMirror core styling */
+.ProseMirror {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+}
+
+.ProseMirror * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Placeholder styling */
@@ -538,53 +575,92 @@ em {
 }
 
 /* Tag Management Styles */
+.tags-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
 .tag-scrollable-container {
-  max-width: 160px;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: calc(100% - 40px); /* Leave space for + button */
+  scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
   position: relative;
+  white-space: nowrap;
+  gap: 4px;
+  padding-right: 8px;
 }
 
 .tag-scrollable-container::-webkit-scrollbar {
   display: none;
 }
 
-/* Fade gradient for overflowing tags - dynamic based on note color */
-.note-yellow .tag-scrollable-container::after {
-  background: linear-gradient(to right, transparent, var(--color-yellow-note));
-}
-
-.note-pink .tag-scrollable-container::after {
-  background: linear-gradient(to right, transparent, var(--color-pink-note));
-}
-
-.note-blue .tag-scrollable-container::after {
-  background: linear-gradient(to right, transparent, var(--color-blue-note));
-}
-
-.tag-scrollable-container::after {
+/* Fade indicators for overflow */
+.tags-wrapper::before,
+.tags-wrapper::after {
   content: '';
   position: absolute;
   top: 0;
-  right: 0;
   bottom: 0;
-  width: 12px;
-  background: linear-gradient(to right, transparent, var(--color-yellow-note));
+  width: 16px;
   pointer-events: none;
+  z-index: 2;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.tag-scrollable-container:hover::after {
-  opacity: 1;
+.tags-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-yellow-note), transparent);
 }
 
-/* Only show gradient when content overflows */
-.tag-scrollable-container[data-overflow="true"]::after {
-  opacity: 0.7;
+.tags-wrapper::after {
+  right: 40px; /* Before the + button */
+  background: linear-gradient(to left, var(--color-yellow-note), transparent);
 }
 
-.tag-scrollable-container[data-overflow="true"]:hover::after {
+/* Dynamic fade gradients based on note color */
+.note-yellow .tags-wrapper::before {
+  background: linear-gradient(to right, var(--color-yellow-note), transparent);
+}
+
+.note-yellow .tags-wrapper::after {
+  background: linear-gradient(to left, var(--color-yellow-note), transparent);
+}
+
+.note-pink .tags-wrapper::before {
+  background: linear-gradient(to right, var(--color-pink-note), transparent);
+}
+
+.note-pink .tags-wrapper::after {
+  background: linear-gradient(to left, var(--color-pink-note), transparent);
+}
+
+.note-blue .tags-wrapper::before {
+  background: linear-gradient(to right, var(--color-blue-note), transparent);
+}
+
+.note-blue .tags-wrapper::after {
+  background: linear-gradient(to left, var(--color-blue-note), transparent);
+}
+
+/* Show fade indicators when overflowing */
+.tags-wrapper[data-overflow-left="true"]::before {
+  opacity: 0.8;
+}
+
+.tags-wrapper[data-overflow-right="true"]::after {
+  opacity: 0.8;
+}
+
+.tags-wrapper:hover[data-overflow-left="true"]::before,
+.tags-wrapper:hover[data-overflow-right="true"]::after {
   opacity: 1;
 }
 
@@ -815,6 +891,8 @@ em {
   font: inherit;
   cursor: pointer;
   transition: color 0.2s ease;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .note-link:hover {

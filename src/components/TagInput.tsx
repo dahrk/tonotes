@@ -12,9 +12,11 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
-  const [hasOverflow, setHasOverflow] = useState(false);
+  const [overflowLeft, setOverflowLeft] = useState(false);
+  const [overflowRight, setOverflowRight] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Load all available tags for suggestions
   useEffect(() => {
@@ -36,14 +38,26 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
     const checkOverflow = () => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        const isOverflowing = container.scrollWidth > container.clientWidth;
-        setHasOverflow(isOverflowing);
+        const hasHorizontalOverflow = container.scrollWidth > container.clientWidth;
+        const scrollLeft = container.scrollLeft;
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        
+        setOverflowLeft(hasHorizontalOverflow && scrollLeft > 5);
+        setOverflowRight(hasHorizontalOverflow && scrollLeft < maxScrollLeft - 5);
       }
     };
 
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
+    const container = scrollContainerRef.current;
+    if (container) {
+      checkOverflow();
+      container.addEventListener('scroll', checkOverflow);
+      window.addEventListener('resize', checkOverflow);
+      
+      return () => {
+        container.removeEventListener('scroll', checkOverflow);
+        window.removeEventListener('resize', checkOverflow);
+      };
+    }
   }, [tags]);
 
   const handleTagAdd = useCallback(async (tagName: string) => {
@@ -105,32 +119,39 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
 
   return (
     <div className="flex items-center flex-1 min-w-0">
-      {/* Scrollable tags container */}
+      {/* Tags wrapper with fade indicators */}
       <div 
-        ref={scrollContainerRef}
-        className="tag-scrollable-container flex items-center space-x-1 overflow-x-auto flex-1 min-w-0"
-        data-overflow={hasOverflow}
+        ref={wrapperRef}
+        className="tags-wrapper"
+        data-overflow-left={overflowLeft}
+        data-overflow-right={overflowRight}
       >
-        {/* Existing tags */}
-        {tags.map((tag) => (
-          <div
-            key={tag.id}
-            className="tag-pill group flex items-center space-x-1"
-          >
-            <span className="tag-text">{tag.name}</span>
-            <button
-              onClick={() => handleTagRemove(tag.id)}
-              className="tag-remove-button opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Remove tag"
+        {/* Scrollable tags container */}
+        <div 
+          ref={scrollContainerRef}
+          className="tag-scrollable-container"
+        >
+          {/* Existing tags */}
+          {tags.map((tag) => (
+            <div
+              key={tag.id}
+              className="tag-pill group flex items-center space-x-1 flex-shrink-0"
             >
-              ×
-            </button>
-          </div>
-        ))}
+              <span className="tag-text">{tag.name}</span>
+              <button
+                onClick={() => handleTagRemove(tag.id)}
+                className="tag-remove-button opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Remove tag"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Fixed add button outside scroll area */}
-      <div className="flex-shrink-0 ml-1">
+      <div className="flex-shrink-0 ml-2">
         {isEditing ? (
           <div className="relative">
             <input

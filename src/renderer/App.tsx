@@ -153,9 +153,6 @@ const App: React.FC = () => {
         onNoteLink={handleNoteLink}
         placeholder="Start typing..."
       />
-      
-      {/* Resize handle */}
-      <div className="resize-handle" title="Resize note"></div>
     </div>
   );
 };
