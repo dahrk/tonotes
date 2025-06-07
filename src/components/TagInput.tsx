@@ -12,7 +12,9 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [hasOverflow, setHasOverflow] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Load all available tags for suggestions
   useEffect(() => {
@@ -27,6 +29,21 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
     };
     
     loadAllTags();
+  }, [tags]);
+
+  // Check for overflow when tags change
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const isOverflowing = container.scrollWidth > container.clientWidth;
+        setHasOverflow(isOverflowing);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
   }, [tags]);
 
   const handleTagAdd = useCallback(async (tagName: string) => {
@@ -87,70 +104,79 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
   );
 
   return (
-    <div className="tag-container flex items-center space-x-1 flex-1 overflow-x-auto">
-      {/* Existing tags */}
-      {tags.map((tag) => (
-        <div
-          key={tag.id}
-          className="tag-pill group flex items-center space-x-1"
-        >
-          <span className="tag-text">{tag.name}</span>
-          <button
-            onClick={() => handleTagRemove(tag.id)}
-            className="tag-remove-button opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Remove tag"
+    <div className="flex items-center flex-1 min-w-0">
+      {/* Scrollable tags container */}
+      <div 
+        ref={scrollContainerRef}
+        className="tag-scrollable-container flex items-center space-x-1 overflow-x-auto flex-1 min-w-0"
+        data-overflow={hasOverflow}
+      >
+        {/* Existing tags */}
+        {tags.map((tag) => (
+          <div
+            key={tag.id}
+            className="tag-pill group flex items-center space-x-1"
           >
-            ×
-          </button>
-        </div>
-      ))}
+            <span className="tag-text">{tag.name}</span>
+            <button
+              onClick={() => handleTagRemove(tag.id)}
+              className="tag-remove-button opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Remove tag"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
 
-      {/* Add tag input */}
-      {isEditing ? (
-        <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onBlur={() => {
-              // Delay hiding to allow for suggestion clicks
-              setTimeout(() => {
-                setIsEditing(false);
-                setShowSuggestions(false);
-                setInputValue('');
-              }, 150);
-            }}
-            placeholder="Add tag..."
-            className="tag-input"
-            autoFocus
-          />
-          
-          {/* Tag suggestions */}
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="tag-suggestions">
-              {filteredSuggestions.slice(0, 5).map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => handleTagAdd(tag.name)}
-                  className="tag-suggestion"
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <button
-          onClick={() => setIsEditing(true)}
-          className="tag-add-button"
-          title="Add tag"
-        >
-          +
-        </button>
-      )}
+      {/* Fixed add button outside scroll area */}
+      <div className="flex-shrink-0 ml-1">
+        {isEditing ? (
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onBlur={() => {
+                // Delay hiding to allow for suggestion clicks
+                setTimeout(() => {
+                  setIsEditing(false);
+                  setShowSuggestions(false);
+                  setInputValue('');
+                }, 150);
+              }}
+              placeholder="Add tag..."
+              className="tag-input"
+              autoFocus
+            />
+            
+            {/* Tag suggestions */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div className="tag-suggestions">
+                {filteredSuggestions.slice(0, 5).map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagAdd(tag.name)}
+                    className="tag-suggestion"
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="tag-add-button"
+            title="Add tag"
+          >
+            +
+          </button>
+        )}
+      </div>
     </div>
   );
 };

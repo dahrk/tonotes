@@ -510,14 +510,42 @@ em {
 }
 
 /* Tag Management Styles */
-.tag-container {
-  max-width: 200px;
+.tag-scrollable-container {
+  max-width: 160px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  position: relative;
 }
 
-.tag-container::-webkit-scrollbar {
+.tag-scrollable-container::-webkit-scrollbar {
   display: none;
+}
+
+/* Fade gradient for overflowing tags */
+.tag-scrollable-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  background: linear-gradient(to right, transparent, var(--color-yellow-note));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tag-scrollable-container:hover::after {
+  opacity: 1;
+}
+
+/* Only show gradient when content overflows */
+.tag-scrollable-container[data-overflow="true"]::after {
+  opacity: 0.7;
+}
+
+.tag-scrollable-container[data-overflow="true"]:hover::after {
+  opacity: 1;
 }
 
 .tag-pill {
