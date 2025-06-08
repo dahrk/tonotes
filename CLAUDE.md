@@ -37,29 +37,31 @@ src/
 
 ### Note Management
 7. **Persistent Sticky Notes**: SQLite-backed notes that survive app restarts
-8. **Always-on-Top**: Notes stay visible above all other windows with proper window leveling
+8. **Always-on-Top Toggle**: Configurable option to keep notes above all windows (default: enabled)
 9. **Note Linking**: @-mention system for linking between notes with search dropdown
-10. **Tag System**: Organize notes with scrollable, color-coded tags and overflow indicators
+10. **Tag System**: Organize notes with scrollable, color-coded tags positioned below header
 11. **Auto-save**: Configurable automatic saving with visual feedback (30 seconds default)
 12. **Color Themes**: Yellow, pink, and blue note color options with dynamic fade gradients
-13. **Minimum Window Constraints**: 320x200px minimum size for usability
+13. **Window Controls**: Delete confirmation dialog with trash icon and minimize functionality
+14. **Enhanced Markdown Persistence**: Improved formatting preservation across edit sessions
 
 ### System Integration
-14. **System Tray**: Always-accessible tray icon with context menu and note count badge
-15. **Global Search**: Fast full-text search across all notes with real-time results
-16. **Settings Management**: Comprehensive settings window with theme and startup controls
-17. **Global Shortcuts**: System-wide keyboard shortcuts (CMD+N, CMD+Shift+F)
-18. **Launch on Startup**: Optional automatic startup with system boot
-19. **Theme Support**: Complete light/dark/system theme support with CSS variables
-20. **macOS Distribution**: Complete electron-builder configuration for app packaging
+15. **Enhanced System Tray**: Context menu showing all notes with open/closed status indicators
+16. **Global Search**: Fast full-text search across all notes with real-time results
+17. **Settings Management**: Comprehensive settings with theme, startup, and window behavior controls
+18. **Global Shortcuts**: System-wide keyboard shortcuts (CMD+N, CMD+Shift+F)
+19. **Launch on Startup**: Optional automatic startup with system boot
+20. **Theme Support**: Complete light/dark/system theme support with CSS variables
+21. **macOS Distribution**: Complete electron-builder configuration for app packaging
 
 ### User Experience & Polish
-21. **No Main Window**: Clean interface with only floating notes and system tray
-22. **Text Wrapping**: Comprehensive word wrapping for all content types and long URLs
-23. **Hidden Scrollbars**: Clean interface with scroll functionality maintained
-24. **Overflow Indicators**: Visual feedback when content extends beyond visible area
-25. **Smooth Animations**: Polished transitions for all UI interactions
-26. **Window Positioning**: Smart cascading positioning for new notes
+22. **No Main Window**: Clean interface with only floating notes and system tray
+23. **Text Wrapping**: Comprehensive word wrapping for all content types and long URLs
+24. **Hidden Scrollbars**: Clean interface with scroll functionality maintained
+25. **Overflow Indicators**: Visual feedback when content extends beyond visible area
+26. **Smooth Animations**: Polished transitions for all UI interactions
+27. **Window Positioning**: Smart cascading positioning for new notes
+28. **Improved Dark Mode**: Enhanced visibility for tag inputs and UI elements in dark theme
 
 ## Development Scripts
 - `npm run dev`: Start development with hot reload

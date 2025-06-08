@@ -13,18 +13,20 @@ A production-ready macOS desktop application for creating persistent sticky note
 - ✏️ **Click-to-Edit Lines**: Individual line editing with auto-sizing textareas
 
 ### Core Note Features
-- 🎯 **Always-on-Top Notes**: Notes stay visible above all other windows with proper leveling
+- 🎯 **Always-on-Top Toggle**: Configurable option to keep notes above all windows (default: enabled)
 - 💾 **Persistent Storage**: SQLite-backed notes that survive app restarts and crashes
 - 🔗 **Smart Note Linking**: Link between notes using @-mentions with search dropdown
-- 🏷️ **Advanced Tag System**: Scrollable, color-coded tags with overflow indicators
+- 🏷️ **Advanced Tag System**: Scrollable, color-coded tags positioned below header for better organization
 - 💾 **Auto-save**: Intelligent auto-saving with visual feedback (30-second intervals)
 - 🎨 **Themed Notes**: Yellow, pink, and blue themes with dynamic fade gradients
-- 📐 **Smart Constraints**: Minimum 320x200px window size for optimal usability
+- 🗑️ **Safe Deletion**: Delete confirmation dialog with intuitive trash icon
+- 📐 **Window Controls**: Minimize functionality and smart window constraints (320x200px minimum)
+- 📝 **Enhanced Markdown**: Improved formatting preservation across edit sessions
 
 ### System Integration
-- 🖥️ **Enhanced System Tray**: Quick access with live note count badge and context menu
+- 🖥️ **Enhanced System Tray**: Context menu showing all notes with open/closed status indicators
 - 🔍 **Lightning-Fast Search**: Full-text search across all notes with real-time results
-- ⚙️ **Comprehensive Settings**: Theme control, startup options, and system preferences
+- ⚙️ **Comprehensive Settings**: Theme control, startup options, and window behavior preferences
 - ⌨️ **Global Shortcuts**: 
   - `Cmd/Ctrl+N`: Create new note (primary)
   - `Cmd/Ctrl+Shift+N`: Create new note (backup)
@@ -40,6 +42,7 @@ A production-ready macOS desktop application for creating persistent sticky note
 - 📊 **Overflow Indicators**: Visual feedback when content extends beyond visible area
 - 🎯 **Smart Positioning**: Intelligent cascading window placement for new notes
 - 🌊 **Smooth Interactions**: Polished animations for all UI elements
+- 🌚 **Improved Dark Mode**: Enhanced visibility for tag inputs and UI elements in dark theme
 
 ## Tech Stack
 
@@ -101,11 +104,12 @@ A production-ready macOS desktop application for creating persistent sticky note
 - **Rich Text Mode**: Full WYSIWYG editing with real-time markdown rendering
 - **Drag Mode**: Line-by-line editing with hover drag handles for reordering
 - **Moving**: Drag notes by their header to reposition on screen
+- **Window Controls**: Click trash icon to delete (with confirmation) or minimize notes
 - **Resizing**: Notes resize automatically, with 320x200px minimum size
 - **Interactive Checkboxes**: Click checkboxes to toggle completion in both modes
 - **Markdown Support**: Type markdown syntax for headers, lists, and formatting
 - **Smart Linking**: Type `@` to search and link to other notes with dropdown
-- **Advanced Tags**: Scrollable tag system with overflow indicators and visual feedback
+- **Advanced Tags**: Scrollable tag system positioned below header with overflow indicators
 
 ### Search & Organization
 - **Global Search**: Use `Cmd/Ctrl+Shift+F` or tray menu to search all notes
@@ -116,7 +120,8 @@ A production-ready macOS desktop application for creating persistent sticky note
 - **Advanced Theming**: Choose Light, Dark, or System theme with real-time switching
 - **Auto-save**: Intelligent 30-second auto-save with visual feedback
 - **Startup Integration**: Enable launch on system startup for seamless workflow
-- **Window Behavior**: Smart cascading positioning for new notes
+- **Window Behavior**: Configure always-on-top behavior and smart cascading positioning
+- **Enhanced System Tray**: Context menu shows all notes with open/closed indicators
 
 ## Project Structure
 

@@ -80,7 +80,10 @@ class PostItApp {
     this.systemTray = new SystemTray(
       () => this.createNote(),
       () => this.searchWindow?.show(),
-      () => this.settingsWindow?.show()
+      () => this.settingsWindow?.show(),
+      () => this.database.getAllNotes(),
+      (noteId: string) => this.focusNote(noteId),
+      (noteId: string) => this.checkNoteWindowExists(noteId)
     );
 
     // Setup theme handling
@@ -138,6 +141,19 @@ class PostItApp {
 
   public handleSettingsChange(settings: any) {
     this.applyTheme(settings.theme);
+    this.updateAlwaysOnTop(settings.alwaysOnTop);
+  }
+
+  private updateAlwaysOnTop(alwaysOnTop: boolean) {
+    this.noteWindows.forEach(window => {
+      if (!window.isDestroyed()) {
+        window.setAlwaysOnTop(alwaysOnTop);
+        if (process.platform === 'darwin' && alwaysOnTop) {
+          window.setAlwaysOnTop(true, 'floating', 1);
+          window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+        }
+      }
+    });
   }
 
   private setupGlobalShortcuts() {
@@ -207,6 +223,9 @@ class PostItApp {
   }
 
   private createNoteWindow(note: Note) {
+    const settings = this.settingsWindow?.getSettings();
+    const alwaysOnTop = settings?.alwaysOnTop ?? true;
+    
     const noteWindow = new BrowserWindow({
       x: note.position_x,
       y: note.position_y,
@@ -216,10 +235,10 @@ class PostItApp {
       minHeight: 200, // Enough for: header + some content
       frame: false,
       transparent: false,
-      alwaysOnTop: true,
+      alwaysOnTop: alwaysOnTop,
       skipTaskbar: true,
       resizable: true,
-      minimizable: false,
+      minimizable: true,
       maximizable: false,
       closable: true,
       hasShadow: true,
@@ -238,7 +257,7 @@ class PostItApp {
     });
 
     // Set window level for true always-on-top behavior on macOS
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && alwaysOnTop) {
       noteWindow.setAlwaysOnTop(true, 'floating', 1);
       noteWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     }
@@ -303,12 +322,29 @@ class PostItApp {
 
   public focusNote(noteId: string): boolean {
     const window = this.noteWindows.get(noteId);
-    if (window) {
+    if (window && !window.isDestroyed()) {
       window.focus();
       window.show();
       return true;
+    } else {
+      // Window doesn't exist, try to recreate it from database
+      const note = this.database.getNote(noteId);
+      if (note) {
+        this.createNoteWindow(note);
+        const newWindow = this.noteWindows.get(noteId);
+        if (newWindow) {
+          newWindow.focus();
+          newWindow.show();
+          return true;
+        }
+      }
     }
     return false;
+  }
+
+  public checkNoteWindowExists(noteId: string): boolean {
+    const window = this.noteWindows.get(noteId);
+    return window !== undefined && !window.isDestroyed();
   }
 
   private setupIPCHandlers() {
@@ -361,6 +397,13 @@ class PostItApp {
       const window = BrowserWindow.fromWebContents(event.sender);
       if (window) {
         window.close();
+      }
+    });
+
+    ipcMain.handle('minimize-window', (event) => {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (window) {
+        window.minimize();
       }
     });
 

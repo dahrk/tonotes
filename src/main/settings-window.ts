@@ -5,6 +5,7 @@ export interface AppSettings {
   launchOnStartup: boolean;
   theme: 'system' | 'light' | 'dark';
   autoSaveInterval: number;
+  alwaysOnTop: boolean;
 }
 
 export class SettingsWindow {
@@ -16,7 +17,8 @@ export class SettingsWindow {
     this.settings = {
       launchOnStartup: false,
       theme: 'system',
-      autoSaveInterval: 30000 // 30 seconds
+      autoSaveInterval: 30000, // 30 seconds
+      alwaysOnTop: true
     };
     
     this.setupIPCHandlers();
@@ -285,6 +287,22 @@ export class SettingsWindow {
             </div>
           </div>
           
+          <div class="setting-group">
+            <div class="setting-label">Window Behavior</div>
+            <div class="setting-description">
+              Configure how note windows behave on your desktop
+            </div>
+            <div class="checkbox-container">
+              <input 
+                type="checkbox" 
+                id="alwaysOnTop" 
+                class="checkbox"
+                ${this.settings.alwaysOnTop ? 'checked' : ''}
+              />
+              <label for="alwaysOnTop">Keep notes always on top of other windows</label>
+            </div>
+          </div>
+          
           <div class="buttons-container">
             <button class="button button-cancel" onclick="window.electronAPI.closeSettings()">
               Cancel
@@ -300,7 +318,8 @@ export class SettingsWindow {
             const settings = {
               launchOnStartup: document.getElementById('launchOnStartup').checked,
               theme: document.getElementById('theme').value,
-              autoSaveInterval: parseInt(document.getElementById('autoSaveInterval').value) * 1000
+              autoSaveInterval: parseInt(document.getElementById('autoSaveInterval').value) * 1000,
+              alwaysOnTop: document.getElementById('alwaysOnTop').checked
             };
             
             window.electronAPI.saveSettings(settings);

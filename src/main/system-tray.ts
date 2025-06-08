@@ -6,15 +6,24 @@ export class SystemTray {
   private onCreateNote: () => string;
   private onShowSearch: () => void;
   private onShowSettings: () => void;
+  private onGetAllNotes: () => any[];
+  private onFocusNote: (noteId: string) => boolean;
+  private onCheckWindowExists: (noteId: string) => boolean;
 
   constructor(
     onCreateNote: () => string,
     onShowSearch: () => void,
-    onShowSettings: () => void
+    onShowSettings: () => void,
+    onGetAllNotes: () => any[],
+    onFocusNote: (noteId: string) => boolean,
+    onCheckWindowExists: (noteId: string) => boolean
   ) {
     this.onCreateNote = onCreateNote;
     this.onShowSearch = onShowSearch;
     this.onShowSettings = onShowSettings;
+    this.onGetAllNotes = onGetAllNotes;
+    this.onFocusNote = onFocusNote;
+    this.onCheckWindowExists = onCheckWindowExists;
     this.createTray();
   }
 
@@ -46,7 +55,8 @@ export class SystemTray {
   }
 
   private updateContextMenu() {
-    const contextMenu = Menu.buildFromTemplate([
+    const notes = this.onGetAllNotes();
+    const menuTemplate: any[] = [
       {
         label: '📝 New Note',
         accelerator: 'CmdOrCtrl+Shift+N',
@@ -63,7 +73,51 @@ export class SystemTray {
         click: () => {
           this.onShowSearch();
         }
-      },
+      }
+    ];
+
+    // Add notes section if there are any notes
+    if (notes.length > 0) {
+      menuTemplate.push({
+        type: 'separator'
+      });
+      
+      menuTemplate.push({
+        label: `📋 Notes (${notes.length})`,
+        enabled: false
+      });
+
+      // Add each note with status indicator
+      notes.slice(0, 10).forEach(note => { // Limit to 10 notes to avoid menu overflow
+        const noteTitle = this.getNoteTitle(note.content) || `Note ${note.id.slice(0, 8)}`;
+        const isOpen = this.onCheckWindowExists(note.id);
+        const statusIcon = isOpen ? '🟢' : '⚪';
+        
+        menuTemplate.push({
+          label: `${statusIcon} ${noteTitle}`,
+          click: () => {
+            if (isOpen) {
+              this.onFocusNote(note.id);
+            } else {
+              // Need to create note window if it doesn't exist
+              this.onFocusNote(note.id);
+            }
+          }
+        });
+      });
+
+      // Add "Show more..." if there are more than 10 notes
+      if (notes.length > 10) {
+        menuTemplate.push({
+          label: `... and ${notes.length - 10} more`,
+          click: () => {
+            this.onShowSearch();
+          }
+        });
+      }
+    }
+
+    menuTemplate.push(
       {
         type: 'separator'
       },
@@ -92,9 +146,25 @@ export class SystemTray {
           app.quit();
         }
       }
-    ]);
+    );
 
+    const contextMenu = Menu.buildFromTemplate(menuTemplate);
     this.tray?.setContextMenu(contextMenu);
+  }
+
+  private getNoteTitle(content: string): string {
+    if (!content) return '';
+    
+    // Extract first line as title, clean up markdown
+    const firstLine = content.split('\n')[0].trim();
+    return firstLine
+      .replace(/^#+\s*/, '') // Remove markdown headers
+      .replace(/\*\*/g, '') // Remove bold markdown
+      .replace(/\*/g, '') // Remove italic markdown
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Replace links with text
+      .replace(/@\w+/g, '') // Remove mentions
+      .substring(0, 50) // Limit length
+      .trim();
   }
 
   private showAbout() {
@@ -196,7 +266,13 @@ export class SystemTray {
       const title = noteCount > 0 ? `${noteCount}` : '';
       this.tray.setTitle(title);
       this.tray.setToolTip(`PostIt - ${noteCount} note${noteCount !== 1 ? 's' : ''}`);
+      // Update context menu with latest notes
+      this.updateContextMenu();
     }
+  }
+
+  public updateTrayMenu() {
+    this.updateContextMenu();
   }
 
   public destroy() {

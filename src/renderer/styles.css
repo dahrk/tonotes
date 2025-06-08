@@ -34,8 +34,9 @@
   --tag-text: rgba(0, 0, 0, 0.7);
   --tag-add-bg: rgba(255, 255, 255, 0.4);
   --tag-add-border: rgba(0, 0, 0, 0.3);
-  --tag-input-bg: rgba(255, 255, 255, 0.9);
-  --tag-input-border: rgba(0, 0, 0, 0.2);
+  --tag-input-bg: rgba(255, 255, 255, 0.95);
+  --tag-input-border: rgba(0, 0, 0, 0.3);
+  --tag-input-text: rgba(0, 0, 0, 0.9);
   --tag-dropdown-bg: rgba(255, 255, 255, 0.95);
   
   /* Link colors */
@@ -76,8 +77,9 @@
   --tag-text: rgba(255, 255, 255, 0.8);
   --tag-add-bg: rgba(0, 0, 0, 0.2);
   --tag-add-border: rgba(255, 255, 255, 0.3);
-  --tag-input-bg: rgba(0, 0, 0, 0.6);
-  --tag-input-border: rgba(255, 255, 255, 0.3);
+  --tag-input-bg: rgba(0, 0, 0, 0.7);
+  --tag-input-border: rgba(255, 255, 255, 0.4);
+  --tag-input-text: rgba(255, 255, 255, 0.95);
   --tag-dropdown-bg: rgba(30, 30, 30, 0.95);
   
   /* Dark theme link colors */
@@ -145,8 +147,15 @@ body {
   -webkit-app-region: no-drag;
 }
 
+.tags-section {
+  padding: 8px 12px 4px 12px;
+  border-bottom: 1px solid var(--header-border);
+  background: var(--header-bg);
+  -webkit-app-region: no-drag;
+}
+
 .note-content {
-  height: calc(100% - 32px);
+  height: calc(100% - 32px - 40px); /* Adjusted for tags section */
   padding: 12px;
   overflow: hidden;
   word-wrap: break-word;
@@ -211,12 +220,12 @@ body {
   transform: scale(1.05);
 }
 
-.close-button {
+.delete-button {
   background: rgba(255, 59, 48, 0.6);
   color: white;
 }
 
-.close-button:hover {
+.delete-button:hover {
   background: rgba(255, 59, 48, 0.8);
 }
 
@@ -743,6 +752,7 @@ em {
   width: 80px;
   height: 20px;
   font-family: inherit;
+  color: var(--tag-input-text);
 }
 
 .tag-input:focus {

@@ -27,6 +27,8 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const [mentionStartPos, setMentionStartPos] = useState(0);
+  const [lastContent, setLastContent] = useState(content);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -150,43 +152,83 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       },
     },
     onUpdate: ({ editor }) => {
-      const markdown = editor.storage.markdown?.getMarkdown() || editor.getText();
-      // For now, use HTML as Tiptap doesn't have built-in markdown export
-      // We'll convert the content to markdown format manually
+      if (isUpdating) return; // Prevent recursive updates
+      
       const html = editor.getHTML();
       const markdownContent = htmlToMarkdown(html);
-      onChange(markdownContent);
+      
+      // Only trigger onChange if content actually changed
+      if (markdownContent !== lastContent) {
+        setLastContent(markdownContent);
+        onChange(markdownContent);
+      }
     },
     immediatelyRender: false,
   });
 
-  // Convert HTML to markdown (basic implementation)
+  // Convert HTML to markdown (improved implementation)
   const htmlToMarkdown = (html: string): string => {
-    // This is a basic conversion - for production you'd want a proper HTML to markdown converter
+    if (!html || html === '<p></p>') return '';
+    
     let markdown = html
+      // Normalize whitespace first
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      
       // Headers
-      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
-      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
-      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
-      // Bold and italic
+      .replace(/<h1[^>]*>\s*(.*?)\s*<\/h1>/gi, '\n# $1\n\n')
+      .replace(/<h2[^>]*>\s*(.*?)\s*<\/h2>/gi, '\n## $1\n\n')
+      .replace(/<h3[^>]*>\s*(.*?)\s*<\/h3>/gi, '\n### $1\n\n')
+      .replace(/<h4[^>]*>\s*(.*?)\s*<\/h4>/gi, '\n#### $1\n\n')
+      .replace(/<h5[^>]*>\s*(.*?)\s*<\/h5>/gi, '\n##### $1\n\n')
+      .replace(/<h6[^>]*>\s*(.*?)\s*<\/h6>/gi, '\n###### $1\n\n')
+      
+      // Code blocks before inline code
+      .replace(/<pre[^>]*><code[^>]*>\s*(.*?)\s*<\/code><\/pre>/gis, '\n```\n$1\n```\n\n')
+      
+      // Bold and italic (nested support)
       .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
       .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
       .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
       .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-      // Code
+      
+      // Inline code
       .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-      .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gi, '```\n$1\n```')
-      // Links
+      
+      // Links (preserve note:// protocol)
       .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-      // Task lists
-      .replace(/<li[^>]*data-checked="true"[^>]*>(.*?)<\/li>/gi, '- [x] $1')
-      .replace(/<li[^>]*data-checked="false"[^>]*>(.*?)<\/li>/gi, '- [ ] $1')
-      // Regular lists
-      .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1')
-      // Remove remaining HTML tags
+      
+      // Task lists (handle nested structure)
+      .replace(/<ul[^>]*data-type="taskList"[^>]*>(.*?)<\/ul>/gis, (match, content) => {
+        return content
+          .replace(/<li[^>]*data-checked="true"[^>]*>\s*(.*?)\s*<\/li>/gi, '\n- [x] $1')
+          .replace(/<li[^>]*data-checked="false"[^>]*>\s*(.*?)\s*<\/li>/gi, '\n- [ ] $1');
+      })
+      
+      // Regular unordered lists
+      .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
+        return content.replace(/<li[^>]*>\s*(.*?)\s*<\/li>/gi, '\n- $1');
+      })
+      
+      // Ordered lists
+      .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
+        let counter = 1;
+        return content.replace(/<li[^>]*>\s*(.*?)\s*<\/li>/gi, () => `\n${counter++}. $1`);
+      })
+      
+      // Line breaks
+      .replace(/<br\s*\/?>/gi, '\n')
+      
+      // Paragraphs
+      .replace(/<p[^>]*>\s*(.*?)\s*<\/p>/gi, '\n$1\n')
+      
+      // Remove any remaining HTML tags
       .replace(/<[^>]*>/g, '')
+      
       // Clean up whitespace
-      .replace(/\n\s*\n/g, '\n\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/^\n+/, '')
+      .replace(/\n+$/, '')
       .trim();
 
     return markdown;
@@ -194,42 +236,100 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   // Convert markdown to HTML for initial content
   const markdownToHtml = (markdown: string): string => {
-    // Basic markdown to HTML conversion
+    if (!markdown.trim()) return '<p></p>';
+    
     let html = markdown
-      // Headers
+      // Escape existing HTML first
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      
+      // Code blocks (must be before other processing)
+      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+      
+      // Headers (from h6 to h1 to avoid conflicts)
+      .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
+      .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
+      .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      // Bold and italic
+      
+      // Bold and italic (order matters)
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Code
+      
+      // Inline code (after bold/italic to avoid conflicts)
       .replace(/`(.*?)`/g, '<code>$1</code>')
-      // Links
+      
+      // Links (with proper escaping)
       .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>')
-      // Task lists
-      .replace(/^- \[x\] (.*$)/gim, '<ul data-type="taskList"><li data-checked="true">$1</li></ul>')
-      .replace(/^- \[ \] (.*$)/gim, '<ul data-type="taskList"><li data-checked="false">$1</li></ul>')
-      // Regular lists
-      .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
-      // Paragraphs
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^(.*)$/gm, '<p>$1</p>')
-      // Clean up
-      .replace(/<p><\/p>/g, '')
-      .replace(/<p>(<h[1-6]>.*<\/h[1-6]>)<\/p>/g, '$1')
-      .replace(/<p>(<ul.*<\/ul>)<\/p>/g, '$1');
+      
+      // Task lists (group consecutive items)
+      .replace(/^- \[[x ]\] .*$/gim, (match) => {
+        if (match.includes('[x]')) {
+          return match.replace(/^- \[x\] (.*)$/gim, '<li data-type="taskItem" data-checked="true">$1</li>');
+        } else {
+          return match.replace(/^- \[ \] (.*)$/gim, '<li data-type="taskItem" data-checked="false">$1</li>');
+        }
+      })
+      
+      // Wrap consecutive task items in task list
+      .replace(/(<li data-type="taskItem"[^>]*>.*<\/li>\s*)+/gm, '<ul data-type="taskList">$&</ul>')
+      
+      // Regular unordered lists
+      .replace(/^- (?!\[[x ]\]) (.*)$/gim, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\s*)+/gm, '<ul>$&</ul>')
+      
+      // Ordered lists
+      .replace(/^\d+\. (.*)$/gim, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\s*)+/gm, (match) => {
+        // Only wrap if not already wrapped and not task items
+        if (!match.includes('data-type="taskList"') && !match.includes('<ul>')) {
+          return '<ol>' + match + '</ol>';
+        }
+        return match;
+      })
+      
+      // Line breaks
+      .replace(/\n/g, '<br>')
+      
+      // Paragraphs (split by double line breaks)
+      .split(/<br><br>/)
+      .map(paragraph => {
+        if (paragraph.trim() && 
+            !paragraph.includes('<h') && 
+            !paragraph.includes('<ul') && 
+            !paragraph.includes('<ol') && 
+            !paragraph.includes('<pre>')) {
+          return '<p>' + paragraph + '</p>';
+        }
+        return paragraph;
+      })
+      .join('');
 
-    return html;
+    // Clean up
+    html = html
+      .replace(/<br>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      .trim();
+
+    return html || '<p></p>';
   };
 
   // Update editor content when prop changes
   useEffect(() => {
-    if (editor && content !== htmlToMarkdown(editor.getHTML())) {
+    if (editor && content !== lastContent && !isUpdating) {
+      setIsUpdating(true);
       const html = markdownToHtml(content);
       editor.commands.setContent(html);
+      setLastContent(content);
+      // Allow other updates after a brief delay
+      setTimeout(() => setIsUpdating(false), 100);
     }
-  }, [editor, content]);
+  }, [editor, content, lastContent, isUpdating]);
 
   // Handle keyboard shortcuts
   useEffect(() => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Trash2 } from 'lucide-react';
 import NoteEditor from '../components/NoteEditor';
 import TagInput from '../components/TagInput';
 import type { Note, Tag } from '../types';
@@ -68,6 +69,20 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleDelete = useCallback(async () => {
+    if (!note) return;
+    
+    const confirmed = window.confirm('Are you sure you want to delete this note? This action cannot be undone.');
+    if (confirmed) {
+      try {
+        await window.electronAPI.deleteNote(note.id);
+      } catch (error) {
+        console.error('Failed to delete note:', error);
+        alert('Failed to delete note');
+      }
+    }
+  }, [note]);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const noteId = urlParams.get('noteId');
@@ -111,11 +126,7 @@ const App: React.FC = () => {
       <div className="note-header">
         {/* Left side with space for traffic lights */}
         <div className="flex items-center" style={{ marginLeft: '70px' }}>
-          <TagInput
-            noteId={note.id}
-            tags={tags}
-            onTagsChange={setTags}
-          />
+          {/* Empty space where tags used to be */}
         </div>
         
         {/* Right side controls */}
@@ -130,15 +141,24 @@ const App: React.FC = () => {
               💾
             </button>
           )}
-          {/* Close button */}
+          {/* Delete button */}
           <button 
-            onClick={() => window.electronAPI.closeWindow()}
-            className="header-button close-button"
-            title="Close note"
+            onClick={handleDelete}
+            className="header-button delete-button"
+            title="Delete note"
           >
-            ×
+            <Trash2 size={16} />
           </button>
         </div>
+      </div>
+      
+      {/* Tags section below header */}
+      <div className="tags-section">
+        <TagInput
+          noteId={note.id}
+          tags={tags}
+          onTagsChange={setTags}
+        />
       </div>
       
       {/* Content */}
