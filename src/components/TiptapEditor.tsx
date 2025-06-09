@@ -47,6 +47,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const markdownToHtml = (markdown: string): string => {
     if (!markdown.trim()) return '<p></p>';
 
+
     // Split content into lines to process line by line for better task list handling
     const lines = markdown.split('\n');
     const processedLines: string[] = [];
@@ -192,14 +193,16 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         continue;
       }
 
-      // Handle empty lines
+      // Handle empty lines - skip them to prevent excess spacing
       if (line.trim() === '') {
-        processedLines.push('<br>');
         continue;
       }
 
-      // Handle regular paragraphs
-      processedLines.push(`<p>${processInlineMarkdown(line)}</p>`);
+      // Handle regular paragraphs - only wrap in <p> if necessary
+      const processedLine = processInlineMarkdown(line);
+      if (processedLine.trim()) {
+        processedLines.push(`<p>${processedLine}</p>`);
+      }
     }
 
     // Close any open lists
@@ -396,6 +399,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const htmlToMarkdown = (html: string): string => {
     if (!html || html === '<p></p>') return '';
 
+
     let markdown = html
       // Don't normalize whitespace too aggressively - preserve structure
       .replace(/>\s+</g, '><')
@@ -426,34 +430,48 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Links (preserve note:// protocol)
       .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
 
-      // Task lists (handle nested structure) - FIX: Remove leading newlines
+      // Task lists (handle nested structure) - Properly format task items
       .replace(
         /<ul[^>]*data-type="taskList"[^>]*>(.*?)<\/ul>/gis,
         (match, content) => {
-          return content
-            .replace(
-              /<li[^>]*data-checked="true"[^>]*>\s*(.*?)\s*<\/li>/gi,
-              '- [x] $1\n'
-            )
-            .replace(
-              /<li[^>]*data-checked="false"[^>]*>\s*(.*?)\s*<\/li>/gi,
-              '- [ ] $1\n'
-            );
+          const taskItems: string[] = [];
+          content.replace(
+            /<li[^>]*data-checked="(true|false)"[^>]*>\s*(.*?)\s*<\/li>/gi,
+            (_: string, checked: string, itemContent: string) => {
+              const checkbox = checked === 'true' ? '[x]' : '[ ]';
+              taskItems.push(`- ${checkbox} ${itemContent.trim()}`);
+              return '';
+            }
+          );
+          return taskItems.length > 0 ? taskItems.join('\n') + '\n' : '';
         }
       )
 
-      // Regular unordered lists - FIX: Remove leading newlines
+      // Regular unordered lists - Properly format list items
       .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
-        return content.replace(/<li[^>]*>\s*(.*?)\s*<\/li>/gi, '- $1\n');
+        const listItems: string[] = [];
+        content.replace(
+          /<li[^>]*>\s*(.*?)\s*<\/li>/gi,
+          (_: string, itemContent: string) => {
+            listItems.push(`- ${itemContent.trim()}`);
+            return '';
+          }
+        );
+        return listItems.length > 0 ? listItems.join('\n') + '\n' : '';
       })
 
-      // Ordered lists - FIX: Use proper replacement with captured group
+      // Ordered lists - Properly format numbered items
       .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
+        const listItems: string[] = [];
         let counter = 1;
-        return content.replace(
+        content.replace(
           /<li[^>]*>\s*(.*?)\s*<\/li>/gi,
-          (_: string, listContent: string) => `${counter++}. ${listContent}\n`
+          (_: string, itemContent: string) => {
+            listItems.push(`${counter++}. ${itemContent.trim()}`);
+            return '';
+          }
         );
+        return listItems.length > 0 ? listItems.join('\n') + '\n' : '';
       })
 
       // Line breaks
@@ -465,10 +483,10 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Remove any remaining HTML tags
       .replace(/<[^>]*>/g, '')
 
-      // Clean up whitespace more carefully
-      .replace(/\n{3,}/g, '\n\n')
-      .replace(/^\n+/, '')
-      .replace(/\n+$/, '')
+      // Clean up whitespace more carefully - allow single newlines between list items
+      .replace(/\n{3,}/g, '\n\n')  // Replace 3+ newlines with double newline
+      .replace(/^\n+/, '')         // Remove leading newlines
+      .replace(/\n+$/, '')         // Remove trailing newlines
       .trim();
 
     return markdown;
