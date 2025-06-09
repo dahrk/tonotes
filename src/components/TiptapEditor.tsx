@@ -358,22 +358,21 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     if (!html || html === '<p></p>') return '';
 
     let markdown = html
-      // Normalize whitespace first
-      .replace(/\s+/g, ' ')
+      // Don't normalize whitespace too aggressively - preserve structure
       .replace(/>\s+</g, '><')
 
-      // Headers
-      .replace(/<h1[^>]*>\s*(.*?)\s*<\/h1>/gi, '\n# $1\n\n')
-      .replace(/<h2[^>]*>\s*(.*?)\s*<\/h2>/gi, '\n## $1\n\n')
-      .replace(/<h3[^>]*>\s*(.*?)\s*<\/h3>/gi, '\n### $1\n\n')
-      .replace(/<h4[^>]*>\s*(.*?)\s*<\/h4>/gi, '\n#### $1\n\n')
-      .replace(/<h5[^>]*>\s*(.*?)\s*<\/h5>/gi, '\n##### $1\n\n')
-      .replace(/<h6[^>]*>\s*(.*?)\s*<\/h6>/gi, '\n###### $1\n\n')
+      // Headers - remove extra newlines
+      .replace(/<h1[^>]*>\s*(.*?)\s*<\/h1>/gi, '# $1\n')
+      .replace(/<h2[^>]*>\s*(.*?)\s*<\/h2>/gi, '## $1\n')
+      .replace(/<h3[^>]*>\s*(.*?)\s*<\/h3>/gi, '### $1\n')
+      .replace(/<h4[^>]*>\s*(.*?)\s*<\/h4>/gi, '#### $1\n')
+      .replace(/<h5[^>]*>\s*(.*?)\s*<\/h5>/gi, '##### $1\n')
+      .replace(/<h6[^>]*>\s*(.*?)\s*<\/h6>/gi, '###### $1\n')
 
       // Code blocks before inline code
       .replace(
         /<pre[^>]*><code[^>]*>\s*(.*?)\s*<\/code><\/pre>/gis,
-        '\n```\n$1\n```\n\n'
+        '```\n$1\n```\n'
       )
 
       // Bold and italic (nested support)
@@ -388,46 +387,46 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Links (preserve note:// protocol)
       .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
 
-      // Task lists (handle nested structure)
+      // Task lists (handle nested structure) - FIX: Remove leading newlines
       .replace(
         /<ul[^>]*data-type="taskList"[^>]*>(.*?)<\/ul>/gis,
         (match, content) => {
           return content
             .replace(
               /<li[^>]*data-checked="true"[^>]*>\s*(.*?)\s*<\/li>/gi,
-              '\n- [x] $1'
+              '- [x] $1\n'
             )
             .replace(
               /<li[^>]*data-checked="false"[^>]*>\s*(.*?)\s*<\/li>/gi,
-              '\n- [ ] $1'
+              '- [ ] $1\n'
             );
         }
       )
 
-      // Regular unordered lists
+      // Regular unordered lists - FIX: Remove leading newlines
       .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
-        return content.replace(/<li[^>]*>\s*(.*?)\s*<\/li>/gi, '\n- $1');
+        return content.replace(/<li[^>]*>\s*(.*?)\s*<\/li>/gi, '- $1\n');
       })
 
-      // Ordered lists
+      // Ordered lists - FIX: Use proper replacement with captured group
       .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
         let counter = 1;
         return content.replace(
           /<li[^>]*>\s*(.*?)\s*<\/li>/gi,
-          () => `\n${counter++}. $1`
+          (_: string, listContent: string) => `${counter++}. ${listContent}\n`
         );
       })
 
       // Line breaks
       .replace(/<br\s*\/?>/gi, '\n')
 
-      // Paragraphs
-      .replace(/<p[^>]*>\s*(.*?)\s*<\/p>/gi, '\n$1\n')
+      // Paragraphs - reduce spacing
+      .replace(/<p[^>]*>\s*(.*?)\s*<\/p>/gi, '$1\n')
 
       // Remove any remaining HTML tags
       .replace(/<[^>]*>/g, '')
 
-      // Clean up whitespace
+      // Clean up whitespace more carefully
       .replace(/\n{3,}/g, '\n\n')
       .replace(/^\n+/, '')
       .replace(/\n+$/, '')
