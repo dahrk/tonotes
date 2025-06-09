@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { cn, tagStyles, buttonStyles } from '../utils/styles';
 import type { Tag } from '../types';
 
 interface TagInputProps {
@@ -143,14 +144,11 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
         <div ref={scrollContainerRef} className="tag-scrollable-container">
           {/* Existing tags */}
           {tags.map(tag => (
-            <div
-              key={tag.id}
-              className="tag-pill group flex items-center space-x-1 flex-shrink-0"
-            >
+            <div key={tag.id} className={tagStyles.pill}>
               <span className="tag-text">{tag.name}</span>
               <button
                 onClick={() => handleTagRemove(tag.id)}
-                className="tag-remove-button opacity-0 group-hover:opacity-100 transition-opacity"
+                className={tagStyles.removeButton}
                 title="Remove tag"
               >
                 ×
@@ -201,7 +199,7 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="tag-add-button"
+            className={tagStyles.addButton}
             title="Add tag"
           >
             +

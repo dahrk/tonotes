@@ -7,6 +7,7 @@ import Link from '@tiptap/extension-link';
 import Typography from '@tiptap/extension-typography';
 import Placeholder from '@tiptap/extension-placeholder';
 import MentionSearch from './MentionSearch';
+import { editorStyles } from '../utils/styles';
 
 interface TiptapEditorProps {
   content: string;
@@ -150,7 +151,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     content: initializeContent(content), // Handle both JSON and legacy markdown
     editorProps: {
       attributes: {
-        class: 'tiptap-editor prose prose-sm max-w-none focus:outline-none',
+        class: editorStyles.tiptap,
         spellcheck: 'false',
       },
       handleClick: (_, __, event) => {
@@ -404,11 +405,8 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }, [content]);
 
   return (
-    <div className="note-content relative h-full">
-      <div
-        ref={contentRef}
-        className="h-full overflow-y-auto scrollable-content"
-      >
+    <div className={editorStyles.content}>
+      <div ref={contentRef} className={editorStyles.scrollable}>
         <EditorContent editor={editor} />
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { cn, positionStyles } from '../utils/styles';
 import type { Note, Tag } from '../types';
 
 interface SearchResult {
@@ -158,12 +159,10 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
   return (
     <div
       ref={containerRef}
-      className="mention-search-dropdown"
+      className={cn('mention-search-dropdown', positionStyles.dropdown)}
       style={{
-        position: 'absolute',
         top: position.top,
         left: position.left,
-        zIndex: 1000,
       }}
       tabIndex={-1}
     >
@@ -174,7 +173,10 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
           {results.map((result, index) => (
             <button
               key={result.id}
-              className={`mention-search-item ${index === selectedIndex ? 'selected' : ''}`}
+              className={cn(
+                'mention-search-item',
+                index === selectedIndex && 'selected'
+              )}
               onClick={() => onSelect(result)}
               onMouseEnter={() => setSelectedIndex(index)}
             >

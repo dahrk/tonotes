@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import NoteEditor from '../components/NoteEditor';
 import TagInput from '../components/TagInput';
+import { cn, layoutStyles, buttonStyles } from '../utils/styles';
 import type { Note, Tag } from '../types';
 
 const App: React.FC = () => {
@@ -136,7 +137,7 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className={layoutStyles.centerContent}>
         <div className="text-gray-600">Loading...</div>
       </div>
     );
@@ -144,7 +145,7 @@ const App: React.FC = () => {
 
   if (!note) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className={layoutStyles.centerContent}>
         <div className="text-red-600">Note not found</div>
       </div>
     );
@@ -157,7 +158,9 @@ const App: React.FC = () => {
       {/* Header with proper spacing for macOS traffic lights */}
       <div className="note-header">
         {/* Left side with space for traffic lights */}
-        <div className="flex items-center" style={{ marginLeft: '70px' }}>
+        <div
+          className={cn('flex items-center', layoutStyles.macOSHeaderSpacing)}
+        >
           {/* Empty space where tags used to be */}
         </div>
 
@@ -167,7 +170,7 @@ const App: React.FC = () => {
           {hasUnsavedChanges && (
             <button
               onClick={saveNote}
-              className="header-button"
+              className={buttonStyles.base}
               title="Save note (Cmd+S)"
             >
               💾
@@ -176,7 +179,7 @@ const App: React.FC = () => {
           {/* Delete button */}
           <button
             onClick={handleDelete}
-            className="header-button delete-button"
+            className={buttonStyles.delete}
             title="Delete note"
           >
             <Trash2 size={16} />
