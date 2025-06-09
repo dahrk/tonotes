@@ -116,7 +116,10 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           inTaskList = true;
         }
         
-        processedLines.push(`<li data-type="taskItem" data-checked="${checked}">${processInlineMarkdown(content)}</li>`);
+        // For now, preserve indentation as spaces within the content to keep it simple
+        // Tiptap will handle the proper nesting through its commands
+        const indentSpaces = indent;
+        processedLines.push(`<li data-type="taskItem" data-checked="${checked}">${indentSpaces}${processInlineMarkdown(content)}</li>`);
         continue;
       }
 
@@ -305,34 +308,70 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         // Handle Tab for indentation
         if (event.key === 'Tab') {
           event.preventDefault();
-          const { state, dispatch } = view;
-          const { selection } = state;
-          const { from, to } = selection;
+          
+          // Check if we're in a task item and use Tiptap's built-in commands
+          if (editor && editor.isActive('taskItem')) {
+            if (event.shiftKey) {
+              // Shift+Tab: Outdent task item
+              if (editor.can().liftListItem('taskItem')) {
+                editor.commands.liftListItem('taskItem');
+                return true;
+              }
+            } else {
+              // Tab: Indent task item
+              if (editor.can().sinkListItem('taskItem')) {
+                editor.commands.sinkListItem('taskItem');
+                return true;
+              }
+            }
+          }
+          // Check if we're in a regular list item
+          else if (editor && editor.isActive('listItem')) {
+            if (event.shiftKey) {
+              // Shift+Tab: Outdent list item
+              if (editor.can().liftListItem('listItem')) {
+                editor.commands.liftListItem('listItem');
+                return true;
+              }
+            } else {
+              // Tab: Indent list item
+              if (editor.can().sinkListItem('listItem')) {
+                editor.commands.sinkListItem('listItem');
+                return true;
+              }
+            }
+          }
+          // Fallback: use manual space insertion for other content
+          else {
+            const { state, dispatch } = view;
+            const { selection } = state;
+            const { from, to } = selection;
 
-          if (event.shiftKey) {
-            // Shift+Tab: Remove indentation (unindent)
-            const tr = state.tr;
-            const textBefore = state.doc.textBetween(
-              Math.max(0, from - 10),
-              from
-            );
+            if (event.shiftKey) {
+              // Shift+Tab: Remove indentation (unindent)
+              const tr = state.tr;
+              const textBefore = state.doc.textBetween(
+                Math.max(0, from - 10),
+                from
+              );
 
-            // Check if we can remove indentation (look for 2 spaces at start of line)
-            const lineStart = textBefore.lastIndexOf('\n') + 1;
-            const beforeLineStart = from - (textBefore.length - lineStart);
-            const lineText = state.doc.textBetween(beforeLineStart, to);
+              // Check if we can remove indentation (look for 2 spaces at start of line)
+              const lineStart = textBefore.lastIndexOf('\n') + 1;
+              const beforeLineStart = from - (textBefore.length - lineStart);
+              const lineText = state.doc.textBetween(beforeLineStart, to);
 
-            if (lineText.startsWith('  ')) {
-              // Remove 2 spaces
-              tr.delete(beforeLineStart, beforeLineStart + 2);
+              if (lineText.startsWith('  ')) {
+                // Remove 2 spaces
+                tr.delete(beforeLineStart, beforeLineStart + 2);
+                dispatch(tr);
+                return true;
+              }
+            } else {
+              // Tab: Add indentation (indent)
+              const tr = state.tr.insertText('  ', from); // Insert 2 spaces
               dispatch(tr);
               return true;
             }
-          } else {
-            // Tab: Add indentation (indent)
-            const tr = state.tr.insertText('  ', from); // Insert 2 spaces
-            dispatch(tr);
-            return true;
           }
         }
         return false;
