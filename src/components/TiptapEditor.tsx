@@ -271,6 +271,19 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       const parsedContent = initializeContent(content);
       editor.commands.setContent(parsedContent, false, { preserveWhitespace: 'full' });
       setLastContent(content);
+      
+      // Trigger overflow check after content is rendered
+      setTimeout(() => {
+        if (contentRef.current) {
+          const container = contentRef.current;
+          const hasVerticalOverflow = container.scrollHeight > container.clientHeight;
+          const isAtBottom = Math.abs(
+            container.scrollHeight - container.clientHeight - container.scrollTop
+          ) < 5;
+          setHasOverflow(hasVerticalOverflow);
+          setIsScrolledToBottom(isAtBottom);
+        }
+      }, 100);
     }
   }, [editor]); // Only run when editor is created
 

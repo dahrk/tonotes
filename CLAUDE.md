@@ -118,7 +118,32 @@ src/
 - **Development Build**: Fast development iteration with Vite + Electron
 - **Production Optimization**: Minified bundles with tree-shaking and code splitting
 
-### Recent Bug Fixes & Improvements
+### Standard Markdown Rendering Refactor (December 2024)
+
+#### Research Findings
+Based on comprehensive research of Tiptap best practices and standard approaches:
+
+- **Tiptap is not markdown native** - It uses ProseMirror JSON internally, not markdown
+- **Official approach**: Store content in Tiptap's native JSON format, not markdown
+- **Standard pattern**: Use Tiptap's built-in serialization (getJSON/setContent) instead of custom conversion
+- **Performance**: Tiptap's native serialization is faster and more reliable than regex-based parsing
+- **Compatibility**: Official Tiptap conversion extensions handle import/export properly
+
+#### Implementation Changes
+- **Removed custom markdown parsing**: Eliminated 343 lines of complex HTML ↔ Markdown conversion
+- **Native JSON storage**: Now store Tiptap's JSON format instead of markdown strings
+- **Backward compatibility**: Added legacy markdown support for existing data
+- **Standard Tiptap API**: Use editor.getJSON() and setContent() for serialization
+- **Bundle optimization**: Reduced JavaScript bundle from 217.62 kB to 214.37 kB
+
+#### Issues Resolved
+- **Numbered lists**: Now use proper ProseMirror list structures with correct incrementing
+- **Nested todos**: Work correctly with Tiptap's built-in list nesting capabilities
+- **Formatting preservation**: All formatting preserved using ProseMirror's document model
+- **Performance**: Eliminated regex-heavy conversions causing delays on save/load
+- **Reliability**: Removed fragile custom parsing prone to edge case failures
+
+### Previous Bug Fixes & Improvements
 
 #### Markdown Rendering Issues (December 2024)
 - **Problem**: Excessive whitespace in markdown conversion causing bullets and checkboxes to appear separated from their text
