@@ -29,216 +29,51 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [lastContent, setLastContent] = useState(content);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Helper function to process inline markdown
-  const processInlineMarkdown = (text: string): string => {
-    return (
-      text
-        // Bold and italic (order matters)
-        .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        // Inline code
-        .replace(/`(.*?)`/g, '<code>$1</code>')
-        // Links
-        .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>')
-    );
-  };
+  // Helper function to handle content initialization
+  const initializeContent = (content: string) => {
+    // Try to parse as JSON first (new format)
+    try {
+      if (content.trim().startsWith('{')) {
+        return JSON.parse(content);
+      }
+    } catch (e) {
+      // Not JSON, continue with legacy markdown handling
+    }
 
-  // Convert markdown to HTML for initial content
-  const markdownToHtml = (markdown: string): string => {
-    if (!markdown.trim()) return '<p></p>';
-
-    // Split content into lines to process line by line for better task list handling
-    const lines = markdown.split('\n');
-    const processedLines: string[] = [];
-    let inTaskList = false;
-    let inRegularList = false;
-    let inOrderedList = false;
-    let inCodeBlock = false;
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-
-      // Handle code blocks
-      if (line.startsWith('```')) {
-        if (inCodeBlock) {
-          processedLines.push('</code></pre>');
-          inCodeBlock = false;
-        } else {
-          // Close any open lists
-          if (inTaskList) {
-            processedLines.push('</ul>');
-            inTaskList = false;
-          }
-          if (inRegularList) {
-            processedLines.push('</ul>');
-            inRegularList = false;
-          }
-          if (inOrderedList) {
-            processedLines.push('</ol>');
-            inOrderedList = false;
-          }
-          processedLines.push('<pre><code>');
-          inCodeBlock = true;
+    // Legacy markdown content - convert to minimal HTML for backward compatibility
+    if (!content.trim()) return '<p></p>';
+    
+    // Simple markdown-to-HTML conversion for legacy data
+    return content
+      .split('\n')
+      .filter(line => line.trim())
+      .map(line => {
+        // Headers
+        if (line.match(/^#+\s/)) {
+          const level = line.match(/^(#+)/)?.[1].length || 1;
+          const text = line.replace(/^#+\s*/, '');
+          return `<h${level}>${text}</h${level}>`;
         }
-        continue;
-      }
-
-      // Skip processing if in code block
-      if (inCodeBlock) {
-        processedLines.push(line);
-        continue;
-      }
-
-      // Escape HTML in regular content
-      line = line
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-      // Handle task list items
-      const taskMatch = line.match(/^(\s*)- \[([ x])\] (.*)$/);
-      if (taskMatch) {
-        const indent = taskMatch[1];
-        const checked = taskMatch[2] === 'x';
-        const content = taskMatch[3];
-
-        if (!inTaskList) {
-          // Close other lists
-          if (inRegularList) {
-            processedLines.push('</ul>');
-            inRegularList = false;
-          }
-          if (inOrderedList) {
-            processedLines.push('</ol>');
-            inOrderedList = false;
-          }
-          processedLines.push('<ul data-type="taskList">');
-          inTaskList = true;
+        // Task lists
+        if (line.match(/^\s*- \[[ x]\]/)) {
+          const checked = line.includes('[x]');
+          const text = line.replace(/^\s*- \[[ x]\]\s*/, '');
+          return `<ul data-type="taskList"><li data-type="taskItem" data-checked="${checked}">${text}</li></ul>`;
         }
-
-        // Preserve indentation by adding CSS margin based on indent level
-        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle =
-          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(
-          `<li data-type="taskItem" data-checked="${checked}"${marginStyle}>${processInlineMarkdown(content)}</li>`
-        );
-        continue;
-      }
-
-      // Handle regular list items
-      const listMatch = line.match(/^(\s*)- (.*)$/);
-      if (listMatch && !line.includes('[ ]') && !line.includes('[x]')) {
-        const indent = listMatch[1];
-        const content = listMatch[2];
-
-        if (!inRegularList) {
-          // Close other lists
-          if (inTaskList) {
-            processedLines.push('</ul>');
-            inTaskList = false;
-          }
-          if (inOrderedList) {
-            processedLines.push('</ol>');
-            inOrderedList = false;
-          }
-          processedLines.push('<ul>');
-          inRegularList = true;
+        // Regular lists
+        if (line.match(/^\s*- /)) {
+          const text = line.replace(/^\s*- /, '');
+          return `<ul><li>${text}</li></ul>`;
         }
-
-        // Preserve indentation by adding CSS margin based on indent level
-        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle =
-          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(
-          `<li${marginStyle}>${processInlineMarkdown(content)}</li>`
-        );
-        continue;
-      }
-
-      // Handle ordered list items
-      const orderedMatch = line.match(/^(\s*)\d+\. (.*)$/);
-      if (orderedMatch) {
-        const indent = orderedMatch[1];
-        const content = orderedMatch[2];
-
-        if (!inOrderedList) {
-          // Close other lists
-          if (inTaskList) {
-            processedLines.push('</ul>');
-            inTaskList = false;
-          }
-          if (inRegularList) {
-            processedLines.push('</ul>');
-            inRegularList = false;
-          }
-          processedLines.push('<ol>');
-          inOrderedList = true;
+        // Numbered lists
+        if (line.match(/^\s*\d+\. /)) {
+          const text = line.replace(/^\s*\d+\. /, '');
+          return `<ol><li>${text}</li></ol>`;
         }
-
-        // Preserve indentation by adding CSS margin based on indent level
-        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle =
-          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(
-          `<li${marginStyle}>${processInlineMarkdown(content)}</li>`
-        );
-        continue;
-      }
-
-      // Close lists if we encounter non-list content
-      if (inTaskList) {
-        processedLines.push('</ul>');
-        inTaskList = false;
-      }
-      if (inRegularList) {
-        processedLines.push('</ul>');
-        inRegularList = false;
-      }
-      if (inOrderedList) {
-        processedLines.push('</ol>');
-        inOrderedList = false;
-      }
-
-      // Handle headers
-      const headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
-      if (headerMatch) {
-        const level = headerMatch[1].length;
-        const content = headerMatch[2];
-        processedLines.push(
-          `<h${level}>${processInlineMarkdown(content)}</h${level}>`
-        );
-        continue;
-      }
-
-      // Handle empty lines - skip them to prevent excess spacing
-      if (line.trim() === '') {
-        continue;
-      }
-
-      // Handle regular paragraphs - only wrap in <p> if necessary
-      const processedLine = processInlineMarkdown(line);
-      if (processedLine.trim()) {
-        processedLines.push(`<p>${processedLine}</p>`);
-      }
-    }
-
-    // Close any open lists
-    if (inTaskList) {
-      processedLines.push('</ul>');
-    }
-    if (inRegularList) {
-      processedLines.push('</ul>');
-    }
-    if (inOrderedList) {
-      processedLines.push('</ol>');
-    }
-    if (inCodeBlock) {
-      processedLines.push('</code></pre>');
-    }
-
-    return processedLines.join('') || '<p></p>';
+        // Regular paragraphs
+        return `<p>${line}</p>`;
+      })
+      .join('');
   };
 
   const editor = useEditor({
@@ -306,7 +141,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         showOnlyWhenEditable: true,
       }),
     ],
-    content: markdownToHtml(content), // Always convert markdown to HTML on initialization
+    content: initializeContent(content), // Handle both JSON and legacy markdown
     editorProps: {
       attributes: {
         class: 'tiptap-editor prose prose-sm max-w-none focus:outline-none',
@@ -402,160 +237,39 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     onUpdate: ({ editor }) => {
       if (isUpdating) return; // Prevent recursive updates
 
-      const html = editor.getHTML();
-      const markdownContent = htmlToMarkdown(html);
+      // Use Tiptap's native JSON serialization (standard approach)
+      const jsonContent = JSON.stringify(editor.getJSON());
 
       // Only trigger onChange if content actually changed
-      if (markdownContent !== lastContent) {
-        setLastContent(markdownContent);
-        onChange(markdownContent);
+      if (jsonContent !== lastContent) {
+        setLastContent(jsonContent);
+        onChange(jsonContent);
       }
     },
     immediatelyRender: false,
   });
 
-  // Convert HTML to markdown (improved implementation)
-  const htmlToMarkdown = (html: string): string => {
-    if (!html || html === '<p></p>') return '';
 
-    let markdown = html
-      // Don't normalize whitespace too aggressively - preserve structure
-      .replace(/>\s+</g, '><')
-
-      // Headers - remove extra newlines
-      .replace(/<h1[^>]*>\s*(.*?)\s*<\/h1>/gi, '# $1\n')
-      .replace(/<h2[^>]*>\s*(.*?)\s*<\/h2>/gi, '## $1\n')
-      .replace(/<h3[^>]*>\s*(.*?)\s*<\/h3>/gi, '### $1\n')
-      .replace(/<h4[^>]*>\s*(.*?)\s*<\/h4>/gi, '#### $1\n')
-      .replace(/<h5[^>]*>\s*(.*?)\s*<\/h5>/gi, '##### $1\n')
-      .replace(/<h6[^>]*>\s*(.*?)\s*<\/h6>/gi, '###### $1\n')
-
-      // Code blocks before inline code
-      .replace(
-        /<pre[^>]*><code[^>]*>\s*(.*?)\s*<\/code><\/pre>/gis,
-        '```\n$1\n```\n'
-      )
-
-      // Bold and italic (nested support)
-      .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
-      .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
-      .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
-      .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-
-      // Inline code
-      .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-
-      // Links (preserve note:// protocol)
-      .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-
-      // Task lists (handle nested structure) - Properly format task items
-      .replace(
-        /<ul[^>]*data-type="taskList"[^>]*>(.*?)<\/ul>/gis,
-        (_, content) => {
-          const taskItems: string[] = [];
-          content.replace(
-            /<li[^>]*data-checked="(true|false)"[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
-            (
-              _: string,
-              checked: string,
-              marginStr: string,
-              itemContent: string
-            ) => {
-              const checkbox = checked === 'true' ? '[x]' : '[ ]';
-              const marginPx = marginStr ? parseInt(marginStr) : 0;
-              const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
-              const indent = '  '.repeat(indentLevel); // 2 spaces per level
-              taskItems.push(`${indent}- ${checkbox} ${itemContent.trim()}`);
-              return '';
-            }
-          );
-          return taskItems.length > 0 ? taskItems.join('\n') + '\n' : '';
-        }
-      )
-
-      // Regular unordered lists - Properly format list items
-      .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (_, content) => {
-        const listItems: string[] = [];
-        content.replace(
-          /<li[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
-          (_: string, marginStr: string, itemContent: string) => {
-            const marginPx = marginStr ? parseInt(marginStr) : 0;
-            const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
-            const indent = '  '.repeat(indentLevel); // 2 spaces per level
-            listItems.push(`${indent}- ${itemContent.trim()}`);
-            return '';
-          }
-        );
-        return listItems.length > 0 ? listItems.join('\n') + '\n' : '';
-      })
-
-      // Ordered lists - Properly format numbered items
-      .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (_, content) => {
-        const listItems: string[] = [];
-        let counter = 1;
-        content.replace(
-          /<li[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
-          (_: string, marginStr: string, itemContent: string) => {
-            const marginPx = marginStr ? parseInt(marginStr) : 0;
-            const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
-            const indent = '  '.repeat(indentLevel); // 2 spaces per level
-            listItems.push(`${indent}${counter++}. ${itemContent.trim()}`);
-            return '';
-          }
-        );
-        return listItems.length > 0 ? listItems.join('\n') + '\n' : '';
-      })
-
-      // Line breaks
-      .replace(/<br\s*\/?>/gi, '\n')
-
-      // Paragraphs - reduce spacing
-      .replace(/<p[^>]*>\s*(.*?)\s*<\/p>/gi, '$1\n')
-
-      // Remove any remaining HTML tags
-      .replace(/<[^>]*>/g, '')
-
-      // Clean up whitespace more carefully - allow single newlines between list items
-      .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with double newline
-      .replace(/^\n+/, '') // Remove leading newlines
-      .replace(/\n+$/, '') // Remove trailing newlines
-      .trim();
-
-    return markdown;
-  };
-
-  // Update editor content when prop changes
+  // Update editor content when prop changes (standard Tiptap approach)
   useEffect(() => {
     if (editor && content !== lastContent && !isUpdating) {
       setIsUpdating(true);
-      const html = markdownToHtml(content);
-
-      // Force content update with immediate render
-      editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
-
-      // Ensure the editor renders the content properly
-      setTimeout(() => {
-        if (editor && !editor.isDestroyed) {
-          // Force a re-render to ensure all markdown elements are properly displayed
-          const currentContent = editor.getHTML();
-          if (currentContent !== html) {
-            editor.commands.setContent(html, false, {
-              preserveWhitespace: 'full',
-            });
-          }
-        }
-        setLastContent(content);
-        setIsUpdating(false);
-      }, 50);
+      
+      // Use Tiptap's standard content setting
+      const parsedContent = initializeContent(content);
+      editor.commands.setContent(parsedContent, false, { preserveWhitespace: 'full' });
+      
+      setLastContent(content);
+      setIsUpdating(false);
     }
   }, [editor, content, lastContent, isUpdating]);
 
   // Ensure proper initialization when editor is created
   useEffect(() => {
     if (editor && content && content.trim()) {
-      // Ensure content is rendered immediately after editor creation
-      const html = markdownToHtml(content);
-      editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
+      // Use standard Tiptap content initialization
+      const parsedContent = initializeContent(content);
+      editor.commands.setContent(parsedContent, false, { preserveWhitespace: 'full' });
       setLastContent(content);
     }
   }, [editor]); // Only run when editor is created
