@@ -281,14 +281,14 @@ export class SystemTray {
 
   private createTrayIcon(): string {
     // Create a simple SVG icon for the system tray that works well in both light and dark modes
+    // Use high contrast colors to ensure visibility in all system tray contexts
     const svg = `
       <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="3" width="13" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1"/>
-        <rect x="2" y="2" width="11" height="9" rx="1" fill="#FFE066" stroke="#D4AF37" stroke-width="0.5"/>
-        <line x1="4" y1="4" x2="11" y2="4" stroke="#8B7355" stroke-width="0.5"/>
-        <line x1="4" y1="5.5" x2="9" y2="5.5" stroke="#8B7355" stroke-width="0.5"/>
-        <line x1="4" y1="7" x2="10" y2="7" stroke="#8B7355" stroke-width="0.5"/>
-        <circle cx="13" cy="3" r="1.5" fill="#007AFF"/>
+        <rect x="2" y="2" width="11" height="9" rx="1" fill="#FFE066" stroke="#D4AF37" stroke-width="1"/>
+        <line x1="4" y1="4" x2="11" y2="4" stroke="#8B7355" stroke-width="0.8"/>
+        <line x1="4" y1="6" x2="9" y2="6" stroke="#8B7355" stroke-width="0.8"/>
+        <line x1="4" y1="8" x2="10" y2="8" stroke="#8B7355" stroke-width="0.8"/>
+        <circle cx="13" cy="3" r="1.5" fill="#007AFF" stroke="#FFFFFF" stroke-width="0.5"/>
       </svg>
     `;
 
@@ -297,7 +297,9 @@ export class SystemTray {
 
   public updateTrayTitle(noteCount: number) {
     if (this.tray) {
-      const title = noteCount > 0 ? `${noteCount}` : '';
+      // Always show an icon character to ensure tray remains visible
+      // Use a subtle dot when no notes, or the count when there are notes
+      const title = noteCount > 0 ? `${noteCount}` : '●';
       this.tray.setTitle(title);
       this.tray.setToolTip(
         `PostIt - ${noteCount} note${noteCount !== 1 ? 's' : ''}`
