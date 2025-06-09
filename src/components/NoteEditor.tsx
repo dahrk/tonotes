@@ -7,6 +7,9 @@ interface NoteEditorProps {
   onSave?: () => void;
   placeholder?: string;
   onNoteLink?: (noteId: string) => void;
+  onCreateNote?: () => void;
+  onToggleAlwaysOnTop?: () => void;
+  onOpenSearch?: () => void;
 }
 
 const NoteEditor: React.FC<NoteEditorProps> = ({
@@ -15,6 +18,9 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
   onSave,
   placeholder = 'Start typing...',
   onNoteLink,
+  onCreateNote,
+  onToggleAlwaysOnTop,
+  onOpenSearch,
 }) => {
   return (
     <TiptapEditor
@@ -23,6 +29,9 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
       onSave={onSave}
       placeholder={placeholder}
       onNoteLink={onNoteLink}
+      onCreateNote={onCreateNote}
+      onToggleAlwaysOnTop={onToggleAlwaysOnTop}
+      onOpenSearch={onOpenSearch}
     />
   );
 };

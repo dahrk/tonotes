@@ -25,6 +25,8 @@ const electronAPI = {
   closeWindow: () => ipcRenderer.invoke('close-window'),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   focusNote: (noteId: string) => ipcRenderer.invoke('focus-note', noteId),
+  toggleAlwaysOnTop: () => ipcRenderer.invoke('toggle-always-on-top'),
+  openSearch: () => ipcRenderer.invoke('open-search'),
 
   // Event listeners
   onNoteUpdated: (callback: (note: Note) => void) => {

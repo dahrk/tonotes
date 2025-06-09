@@ -85,6 +85,36 @@ const App: React.FC = () => {
     }
   }, [note]);
 
+  const handleCreateNote = useCallback(async () => {
+    try {
+      await window.electronAPI.createNote({});
+    } catch (error) {
+      console.error('Failed to create note:', error);
+    }
+  }, []);
+
+  const handleToggleAlwaysOnTop = useCallback(async () => {
+    try {
+      // This will be handled by the main process via IPC
+      // We'll need to add this IPC method if it doesn't exist
+      if (window.electronAPI.toggleAlwaysOnTop) {
+        await window.electronAPI.toggleAlwaysOnTop();
+      }
+    } catch (error) {
+      console.error('Failed to toggle always on top:', error);
+    }
+  }, []);
+
+  const handleOpenSearch = useCallback(async () => {
+    try {
+      if (window.electronAPI.openSearch) {
+        await window.electronAPI.openSearch();
+      }
+    } catch (error) {
+      console.error('Failed to open search:', error);
+    }
+  }, []);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const noteId = urlParams.get('noteId');
@@ -169,6 +199,9 @@ const App: React.FC = () => {
         }}
         onSave={saveNote}
         onNoteLink={handleNoteLink}
+        onCreateNote={handleCreateNote}
+        onToggleAlwaysOnTop={handleToggleAlwaysOnTop}
+        onOpenSearch={handleOpenSearch}
         placeholder="Start typing..."
       />
     </div>

@@ -167,30 +167,9 @@ class PostItApp {
   }
 
   private setupGlobalShortcuts() {
-    // Register global shortcuts
-    try {
-      // Cmd/Ctrl + N - Create new note (standard shortcut)
-      globalShortcut.register('CommandOrControl+N', () => {
-        this.createNote();
-      });
-
-      // Cmd/Ctrl + Shift + N - Create new note (backup)
-      globalShortcut.register('CommandOrControl+Shift+N', () => {
-        this.createNote();
-      });
-
-      // Cmd/Ctrl + Shift + F - Open search
-      globalShortcut.register('CommandOrControl+Shift+F', () => {
-        this.searchWindow?.show();
-      });
-
-      // Cmd/Ctrl + Shift + A - Toggle always on top
-      globalShortcut.register('CommandOrControl+Shift+A', () => {
-        this.toggleAlwaysOnTopGlobal();
-      });
-    } catch (error) {
-      console.warn('Failed to register global shortcuts:', error);
-    }
+    // Note: Global shortcuts removed - all shortcuts now only work when note windows are focused
+    // Users can create notes via system tray when no notes are focused
+    // This prevents conflicts with other applications and follows expected desktop app behavior
   }
 
   private updateTrayNoteCount() {
@@ -462,6 +441,14 @@ class PostItApp {
 
     ipcMain.handle('focus-note', (_, noteId: string) => {
       return this.focusNote(noteId);
+    });
+
+    ipcMain.handle('toggle-always-on-top', () => {
+      this.toggleAlwaysOnTopGlobal();
+    });
+
+    ipcMain.handle('open-search', () => {
+      this.searchWindow?.show();
     });
   }
 

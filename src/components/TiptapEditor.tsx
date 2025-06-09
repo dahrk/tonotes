@@ -14,6 +14,9 @@ interface TiptapEditorProps {
   onSave?: () => void;
   placeholder?: string;
   onNoteLink?: (noteId: string) => void;
+  onCreateNote?: () => void;
+  onToggleAlwaysOnTop?: () => void;
+  onOpenSearch?: () => void;
 }
 
 const TiptapEditor: React.FC<TiptapEditorProps> = ({
@@ -22,6 +25,9 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   onSave,
   placeholder = 'Start typing...',
   onNoteLink,
+  onCreateNote,
+  onToggleAlwaysOnTop,
+  onOpenSearch,
 }) => {
   const [showMentionSearch, setShowMentionSearch] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
@@ -287,19 +293,41 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     }
   }, [editor]); // Only run when editor is created
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts (note-focused only)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // CMD+S to save
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         onSave?.();
+        return;
+      }
+
+      // CMD+N or CMD+Shift+N to create new note
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        onCreateNote?.();
+        return;
+      }
+
+      // CMD+Shift+F to open search
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        onOpenSearch?.();
+        return;
+      }
+
+      // CMD+Shift+A to toggle always on top
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        onToggleAlwaysOnTop?.();
+        return;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onSave]);
+  }, [onSave, onCreateNote, onOpenSearch, onToggleAlwaysOnTop]);
 
   const handleMentionSelect = useCallback(
     (selectedNote: any) => {
