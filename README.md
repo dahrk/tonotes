@@ -31,6 +31,7 @@ A production-ready macOS desktop application for creating persistent sticky note
   - `Cmd/Ctrl+N`: Create new note (primary)
   - `Cmd/Ctrl+Shift+N`: Create new note (backup)
   - `Cmd/Ctrl+Shift+F`: Open search window
+  - `Cmd/Ctrl+Shift+A`: Toggle always-on-top for all notes
   - `Cmd/Ctrl+S`: Save current note
 - 🚀 **Smart Startup**: Optional automatic launch with system boot
 - 📦 **Easy Distribution**: Complete macOS app packaging with DMG and ZIP
@@ -185,6 +186,50 @@ The application uses SQLite for robust data persistence with the following struc
    npm run dist:all
    ```
 
+## Troubleshooting
+
+### Common Issues
+
+**Notes not saving properly**
+- Check that the app has write permissions to the user data directory
+- Restart the application if auto-save appears stuck
+- Manual save with `Cmd/Ctrl+S` should always work
+
+**System tray icon not visible**
+- On macOS, check System Preferences > Dock & Menu Bar > Clock
+- If using dark mode, the icon may be less visible - look for the bullet (●) indicator
+- Right-click in the system tray area to access the context menu
+
+**Notes not staying on top**
+- Use `Cmd/Ctrl+Shift+A` to toggle always-on-top behavior
+- Check Settings window for always-on-top preferences
+- On macOS, ensure the app has accessibility permissions if needed
+
+**Performance issues with many notes**
+- Consider archiving old notes by deleting unused ones
+- Global search is optimized but may be slower with 100+ notes
+- Close unused note windows to reduce memory usage
+
+**Build or installation issues**
+- Ensure Node.js version 16+ is installed
+- Clear node_modules and reinstall: `rm -rf node_modules && npm install`
+- For macOS builds, ensure Xcode command line tools are installed
+
+### System Requirements
+
+- **macOS**: 10.14 Mojave or later (Intel and Apple Silicon supported)
+- **Windows**: Windows 10 version 1809 or later
+- **Linux**: Ubuntu 18.04, Fedora 28, or equivalent
+- **Memory**: 200MB RAM minimum, 500MB recommended
+- **Storage**: 150MB for application and user data
+
+### Known Limitations
+
+- Maximum of ~1000 notes for optimal performance
+- Note content size limit of 1MB per note
+- System tray behavior varies by operating system
+- Global shortcuts may conflict with other applications
+
 ## Contributing
 
 1. Fork the repository
@@ -201,4 +246,5 @@ This project is licensed under the ISC License.
 
 - Built with [Electron](https://www.electronjs.org/)
 - UI powered by [React](https://reactjs.org/) and [Tailwind CSS](https://tailwindcss.com/)
-- Markdown support via [react-markdown](https://github.com/remarkjs/react-markdown) 
+- Rich text editing via [Tiptap](https://tiptap.dev/)
+- Drag and drop with [@dnd-kit](https://github.com/clauderic/dnd-kit) 

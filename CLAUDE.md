@@ -129,6 +129,18 @@ src/
   - Enhanced list formatting to preserve proper spacing without excess newlines
 - **Files Modified**: `src/components/TiptapEditor.tsx`
 
+#### Numbered List Sequencing and Indentation (December 2024)
+- **Problem**: Numbered lists showing "1." for all items instead of incrementing, and indented todos/lists losing nesting after save/reload
+- **Root Cause**: 
+  - CSS `list-style-type` not set for Tiptap ordered lists, causing browser default reset
+  - Indentation information was being ignored during markdown to HTML conversion
+- **Solution**:
+  - Added `list-style-type: decimal` for `.tiptap-ordered-list` in CSS
+  - Added `list-style-type: disc` for `.tiptap-bullet-list` for consistency
+  - Implemented indentation preservation using margin-left CSS styles (20px = 1 level)
+  - Enhanced HTML to markdown conversion to restore indentation as proper 2-space formatting
+- **Files Modified**: `src/components/TiptapEditor.tsx`, `src/renderer/styles.css`
+
 #### System Tray Visibility Issues (December 2024)
 - **Problem**: System tray icon appearing to disappear when no notes exist (noteCount = 0)
 - **Root Cause**: Setting tray title to empty string (`''`) on macOS made icon less visible or appear hidden
@@ -138,6 +150,13 @@ src/
   - Enhanced icon visibility with thicker strokes and better color contrast
 - **Files Modified**: `src/main/system-tray.ts`
 
+#### Code Quality Improvements (December 2024)
+- **Cleanup**: Removed unused functions, variables, and parameters throughout codebase
+- **Bundle Size**: Reduced JavaScript bundle from 217.80 kB to 217.62 kB
+- **TypeScript**: Fixed all unused variable warnings and improved type safety
+- **UI Polish**: Added proper spacing between save and delete buttons (4px → 12px)
+- **Files Modified**: `src/components/TiptapEditor.tsx`, `src/renderer/App.tsx`
+
 ### Error Handling
 - Input validation for all user inputs
 - Graceful degradation for system integration failures
@@ -145,45 +164,124 @@ src/
 - Build process safety with proper main/renderer separation
 
 ## Database Schema
-- `notes`: Core note data with content, position, size, and timestamps
-- `tags`: Tag definitions with normalized names and metadata
-- `note_tags`: Many-to-many relationship between notes and tags with referential integrity
 
-## Recent Enhancements
+The application uses SQLite with better-sqlite3 for high-performance synchronous operations:
 
-### Critical Markdown Rendering Fix
-- **Problem Solved**: Notes now properly display formatted markdown when reopened (checkboxes, headers, lists)
-- **Root Cause**: Timing issues in editor initialization and inadequate markdown-to-HTML conversion
-- **Solution**: Complete rewrite of markdownToHtml function with line-by-line processing
-- **Impact**: Seamless editing experience with consistent formatting across sessions
+### Tables
 
-### Always-on-Top Keyboard Toggle
-- **New Feature**: CMD+Shift+A global shortcut to toggle always-on-top for all notes
-- **System Integration**: Desktop notifications, system tray updates, and settings persistence
-- **User Experience**: Instant feedback with visual indicators in tray menu
-- **Implementation**: Robust settings management with programmatic updates
+```sql
+-- Core note storage
+notes (
+  id TEXT PRIMARY KEY,           -- UUID v4 identifier
+  content TEXT NOT NULL DEFAULT '', -- Markdown content
+  color TEXT NOT NULL CHECK(color IN ('yellow', 'pink', 'blue')),
+  position_x INTEGER NOT NULL,   -- Window X coordinate
+  position_y INTEGER NOT NULL,   -- Window Y coordinate  
+  width INTEGER NOT NULL DEFAULT 300,
+  height INTEGER NOT NULL DEFAULT 300,
+  created_at TEXT NOT NULL,      -- ISO timestamp
+  updated_at TEXT NOT NULL       -- ISO timestamp
+);
 
-## Critical Bug Fixes
+-- Tag definitions
+tags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL      -- Normalized tag name (lowercase, hyphenated)
+);
 
-### Issue 1: Markdown Element Separation on Reload
-- **Problem**: Bullet points, checkboxes, and numbered lists broke formatting when notes were reopened
-- **Root Cause**: 
-  - Ordered lists showed "$1" due to incorrect regex replacement not capturing content
-  - Excessive newlines from aggressive whitespace normalization in htmlToMarkdown
-  - Bullet points and checkboxes separated due to incorrect newline insertion
-- **Solution**: 
-  - Fixed ordered list regex to properly capture and use list content
-  - Reduced excessive whitespace normalization while preserving structure
-  - Removed leading newlines from list item generation
-  - Improved paragraph handling to prevent extra spacing
-- **Result**: All markdown elements now render exactly as saved, no visual differences on reopen
+-- Many-to-many note-tag relationships
+note_tags (
+  note_id TEXT NOT NULL,
+  tag_id INTEGER NOT NULL,
+  PRIMARY KEY (note_id, tag_id),
+  FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+```
 
-### Issue 2: Tab Behavior in Todo Lists  
-- **Problem**: Tab key only indented text, not the entire todo item with checkbox
-- **Root Cause**: Manual space insertion instead of using Tiptap's built-in list commands
-- **Solution**:
-  - Replaced manual Tab handling with Tiptap's `sinkListItem()` and `liftListItem()` commands
-  - Added proper detection for `taskItem` vs `listItem` context using `editor.isActive()`
-  - Implemented conditional command execution with `editor.can()` checks
-  - Maintained fallback space insertion for non-list content
-- **Result**: Tab now properly indents entire todo items (checkbox + text) maintaining list structure
+### Design Decisions
+- **UUID Primary Keys**: Prevents collisions and enables distributed scenarios
+- **Foreign Key Constraints**: Ensures referential integrity with automatic cleanup
+- **Synchronous Operations**: Better-sqlite3 provides simpler API than async alternatives
+- **Normalized Tags**: Tag names are stored once and referenced, preventing duplication
+- **JSON-Free Design**: Simple relational model for better query performance
+
+## Markdown Rendering Implementation
+
+### Architecture Overview
+
+The markdown system uses a bidirectional conversion approach between HTML (for Tiptap) and Markdown (for storage):
+
+```
+Storage (Markdown) ←→ Tiptap Editor (HTML) ←→ User Interface
+```
+
+### Key Components
+
+1. **markdownToHtml()**: Converts stored markdown to HTML for Tiptap initialization
+2. **htmlToMarkdown()**: Converts Tiptap HTML back to markdown for storage
+3. **processInlineMarkdown()**: Handles inline formatting (bold, italic, links, code)
+
+### List Handling Strategy
+
+The implementation uses a line-by-line processing approach for better control:
+
+```typescript
+// Indentation preservation using CSS margins
+const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
+const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+
+// HTML output with preserved indentation
+`<li${marginStyle}>${processInlineMarkdown(content)}</li>`
+
+// Restoration during HTML to markdown conversion
+const marginPx = marginStr ? parseInt(marginStr) : 0;
+const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
+const indent = '  '.repeat(indentLevel); // 2 spaces per level
+```
+
+### Supported Markdown Features
+
+- **Headers**: `# ## ### ####` with proper hierarchy
+- **Lists**: Unordered (`-`), ordered (`1.`), and task lists (`- [ ]` / `- [x]`)
+- **Indentation**: 2-space indentation levels preserved via CSS margins
+- **Inline Formatting**: Bold (`**`), italic (`*`), code (`` ` ``), links (`[text](url)`)
+- **Note Links**: Special `note://` protocol for internal linking
+- **Code Blocks**: Fenced code blocks with ``` syntax
+
+### Technical Challenges Solved
+
+1. **Bidirectional Conversion**: Ensuring markdown ↔ HTML conversion preserves all formatting
+2. **Indentation Handling**: Using CSS margins to preserve list nesting without complex HTML nesting
+3. **Empty Line Management**: Preventing excessive `<br>` tags while preserving intentional spacing
+4. **List Style Reset**: Tailwind CSS resets required explicit `list-style-type` declaration
+5. **Interactive Elements**: Making checkboxes clickable in both edit and view modes
+
+## Future Improvement Ideas
+
+### Performance Optimizations
+- Implement virtual scrolling for large notes (>10,000 characters)
+- Add database query optimization with indexes for search
+- Consider note content chunking for very large documents
+- Implement lazy loading for note windows
+
+### Feature Enhancements
+- Export functionality (PDF, HTML, plain text)
+- Import from other note-taking apps
+- Advanced search with regex and tag filtering
+- Note templates and quick-insert snippets
+- Collaborative editing with operational transforms
+- Plugin system for custom extensions
+
+### Technical Debt
+- Migrate from CSS margins to proper HTML list nesting for indentation
+- Implement proper undo/redo stack in Tiptap
+- Add comprehensive error reporting and crash analytics
+- Improve TypeScript coverage and strict mode compliance
+- Add automated accessibility testing
+
+### Architecture Improvements
+- Consider moving to web workers for heavy operations
+- Implement proper state management with Redux or Zustand
+- Add comprehensive logging and debugging infrastructure
+- Migrate to Electron's context isolation for better security
