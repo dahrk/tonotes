@@ -142,3 +142,28 @@ src/
 - **System Integration**: Desktop notifications, system tray updates, and settings persistence
 - **User Experience**: Instant feedback with visual indicators in tray menu
 - **Implementation**: Robust settings management with programmatic updates
+
+## Critical Bug Fixes
+
+### Issue 1: Markdown Element Separation on Reload
+- **Problem**: Bullet points, checkboxes, and numbered lists broke formatting when notes were reopened
+- **Root Cause**: 
+  - Ordered lists showed "$1" due to incorrect regex replacement not capturing content
+  - Excessive newlines from aggressive whitespace normalization in htmlToMarkdown
+  - Bullet points and checkboxes separated due to incorrect newline insertion
+- **Solution**: 
+  - Fixed ordered list regex to properly capture and use list content
+  - Reduced excessive whitespace normalization while preserving structure
+  - Removed leading newlines from list item generation
+  - Improved paragraph handling to prevent extra spacing
+- **Result**: All markdown elements now render exactly as saved, no visual differences on reopen
+
+### Issue 2: Tab Behavior in Todo Lists  
+- **Problem**: Tab key only indented text, not the entire todo item with checkbox
+- **Root Cause**: Manual space insertion instead of using Tiptap's built-in list commands
+- **Solution**:
+  - Replaced manual Tab handling with Tiptap's `sinkListItem()` and `liftListItem()` commands
+  - Added proper detection for `taskItem` vs `listItem` context using `editor.isActive()`
+  - Implemented conditional command execution with `editor.can()` checks
+  - Maintained fallback space insertion for non-list content
+- **Result**: Tab now properly indents entire todo items (checkbox + text) maintaining list structure
