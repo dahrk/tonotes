@@ -23,6 +23,7 @@ src/
   components/     # Reusable React components
   database/       # SQLite database layer
   types/          # TypeScript type definitions
+  utils/          # Utility functions and helpers
 ```
 
 ## Core Features
@@ -94,13 +95,15 @@ src/
 - **Theme Persistence**: Settings-based theme preferences with real-time switching
 - **Cross-Window**: Consistent theming across notes, search, and settings
 
-### Global Shortcuts
-- `Cmd/Ctrl+N`: Create new note (primary shortcut)
+### Note-Focused Shortcuts
+- `Cmd/Ctrl+N`: Create new note (when note window is focused)
 - `Cmd/Ctrl+Shift+N`: Create new note (backup shortcut)
-- `Cmd/Ctrl+Shift+F`: Open global search
-- `Cmd/Ctrl+Shift+A`: Toggle always-on-top for all notes
-- `Cmd/Ctrl+S`: Save current note
-- Context menu shortcuts for common actions
+- `Cmd/Ctrl+Shift+F`: Open global search (when note window is focused)
+- `Cmd/Ctrl+Shift+A`: Toggle always-on-top (when note window is focused)
+- `Cmd/Ctrl+S`: Save current note (when note window is focused)
+- **Architecture Change**: Global shortcuts removed to prevent conflicts with other applications
+- **Alternative Access**: System tray remains available for creating notes when no notes are focused
+- **User Experience**: Follows expected desktop app behavior where shortcuts are contextual to focused window
 
 ### Advanced Editor Architecture
 - **Dual-Mode System**: TiptapEditor for rich text, DraggableLineEditor for drag operations
@@ -143,6 +146,54 @@ Based on comprehensive research of Tiptap best practices and standard approaches
 - **Performance**: Eliminated regex-heavy conversions causing delays on save/load
 - **Reliability**: Removed fragile custom parsing prone to edge case failures
 
+### Composable Styling System (December 2024)
+
+#### Design Philosophy
+Implemented a comprehensive styling utility system to improve maintainability and reduce code duplication:
+
+- **Central Style Management**: All reusable styles defined in `src/utils/styles.ts`
+- **Type Safety**: Full TypeScript support for style constants and utilities
+- **Conditional Classes**: Smart `cn()` utility for combining classes with conditional logic
+- **Consistency**: Standardized patterns across all components
+- **Performance**: Reduced CSS class string concatenation and duplication
+
+#### Key Components
+
+**cn() Utility Function**
+```typescript
+// Intelligently combines class names, filtering out undefined/false values
+cn('base-class', isActive && 'active', error && 'error-state')
+```
+
+**Style Constants**
+- `layoutStyles`: Common layout patterns (centerContent, macOSHeaderSpacing)
+- `tagStyles`: Tag component patterns (pill, removeButton, addButton)  
+- `buttonStyles`: Button patterns (base, delete)
+- `editorStyles`: Editor component patterns (tiptap, content, scrollable)
+- `positionStyles`: Positioning utilities (absolute, dropdown)
+
+#### Implementation Impact
+- **Maintainability**: Centralized style definitions eliminate duplication
+- **Developer Experience**: IDE autocompletion and type checking for style constants
+- **Consistency**: Unified styling patterns across components
+- **Bundle Size**: Optimized class name generation and reduced redundancy
+- **Refactoring**: Easier to update styles globally by changing constants
+
+#### Migration Pattern
+```typescript
+// Before: Hardcoded className strings
+<div className="w-full h-full flex items-center justify-center">
+
+// After: Reusable style constants  
+<div className={layoutStyles.centerContent}>
+
+// Before: Template literal concatenation
+className={`mention-search-item ${index === selectedIndex ? 'selected' : ''}`}
+
+// After: cn() utility with conditional logic
+className={cn('mention-search-item', index === selectedIndex && 'selected')}
+```
+
 ### Previous Bug Fixes & Improvements
 
 #### Markdown Rendering Issues (December 2024)
@@ -181,6 +232,16 @@ Based on comprehensive research of Tiptap best practices and standard approaches
 - **TypeScript**: Fixed all unused variable warnings and improved type safety
 - **UI Polish**: Added proper spacing between save and delete buttons (4px → 12px)
 - **Files Modified**: `src/components/TiptapEditor.tsx`, `src/renderer/App.tsx`
+
+#### Comprehensive Code Cleanup & Standardization (December 2024)
+- **Unused Dependencies**: Removed `electron-store` package that was never used
+- **Legacy CSS**: Removed 112+ lines of unused task list styles from pre-Tiptap implementation
+- **Code Comments**: Simplified `setupGlobalShortcuts()` method with clearer documentation
+- **Standard Patterns**: Implemented composable styling system with `cn()` utility
+- **Style Consolidation**: Centralized reusable styles in `src/utils/styles.ts`
+- **Documentation**: Enhanced README.md and CLAUDE.md with accurate technical details
+- **Bundle Optimization**: Further reduced CSS bundle from 16.88 kB to 15.84 kB
+- **Files Modified**: `package.json`, `src/renderer/styles.css`, `src/main/main.ts`, multiple component files
 
 ### Error Handling
 - Input validation for all user inputs

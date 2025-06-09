@@ -27,12 +27,13 @@ A production-ready macOS desktop application for creating persistent sticky note
 - 🖥️ **Enhanced System Tray**: Context menu showing all notes with open/closed status indicators
 - 🔍 **Lightning-Fast Search**: Full-text search across all notes with real-time results
 - ⚙️ **Comprehensive Settings**: Theme control, startup options, and window behavior preferences
-- ⌨️ **Global Shortcuts**: 
-  - `Cmd/Ctrl+N`: Create new note (primary)
-  - `Cmd/Ctrl+Shift+N`: Create new note (backup)
-  - `Cmd/Ctrl+Shift+F`: Open search window
-  - `Cmd/Ctrl+Shift+A`: Toggle always-on-top for all notes
-  - `Cmd/Ctrl+S`: Save current note
+- ⌨️ **Note-Focused Shortcuts**: 
+  - `Cmd/Ctrl+N`: Create new note (when note is focused)
+  - `Cmd/Ctrl+Shift+N`: Create new note (backup shortcut)
+  - `Cmd/Ctrl+Shift+F`: Open search window (when note is focused)
+  - `Cmd/Ctrl+Shift+A`: Toggle always-on-top for all notes (when note is focused)
+  - `Cmd/Ctrl+S`: Save current note (when note is focused)
+  - **Note**: All shortcuts work only when a note window is focused. Use system tray to create notes when no notes are focused.
 - 🚀 **Smart Startup**: Optional automatic launch with system boot
 - 📦 **Easy Distribution**: Complete macOS app packaging with DMG and ZIP
 
@@ -52,7 +53,7 @@ A production-ready macOS desktop application for creating persistent sticky note
 - **Tiptap**: Professional WYSIWYG editor with markdown support and extensions
 - **@dnd-kit**: Modern, accessible drag and drop library for React
 - **Vite**: Lightning-fast build tool and development server
-- **Tailwind CSS**: Utility-first CSS framework with custom theme system
+- **Tailwind CSS**: Utility-first CSS framework with custom theme system and composable styling utilities
 - **SQLite (better-sqlite3)**: High-performance local database for note persistence
 - **Electron Builder**: Complete application packaging and distribution solution
 
@@ -149,6 +150,8 @@ src/
     database.ts     # Database operations and schema
   types/          # TypeScript type definitions
     index.ts        # Shared type definitions
+  utils/          # Utility functions and helpers
+    styles.ts       # Composable styling system with cn() utility
 ```
 
 ## Database Schema
@@ -228,7 +231,7 @@ The application uses SQLite for robust data persistence with the following struc
 - Maximum of ~1000 notes for optimal performance
 - Note content size limit of 1MB per note
 - System tray behavior varies by operating system
-- Global shortcuts may conflict with other applications
+- Shortcuts only work when note windows are focused (by design to prevent conflicts)
 
 ## Contributing
 
