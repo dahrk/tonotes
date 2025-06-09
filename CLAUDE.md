@@ -118,6 +118,26 @@ src/
 - **Development Build**: Fast development iteration with Vite + Electron
 - **Production Optimization**: Minified bundles with tree-shaking and code splitting
 
+### Recent Bug Fixes & Improvements
+
+#### Markdown Rendering Issues (December 2024)
+- **Problem**: Excessive whitespace in markdown conversion causing bullets and checkboxes to appear separated from their text
+- **Root Cause**: Previous fix only addressed `htmlToMarkdown` but not `markdownToHtml`, plus empty lines were creating excessive `<br>` tags
+- **Solution**: 
+  - Improved `htmlToMarkdown` function with proper list item formatting using arrays and join operations
+  - Fixed `markdownToHtml` to skip empty lines preventing excess `<br>` tag generation
+  - Enhanced list formatting to preserve proper spacing without excess newlines
+- **Files Modified**: `src/components/TiptapEditor.tsx`
+
+#### System Tray Visibility Issues (December 2024)
+- **Problem**: System tray icon appearing to disappear when no notes exist (noteCount = 0)
+- **Root Cause**: Setting tray title to empty string (`''`) on macOS made icon less visible or appear hidden
+- **Solution**:
+  - Show bullet character (`●`) instead of empty string when noteCount is 0
+  - Improved fallback SVG icon with higher contrast colors and removed problematic `currentColor`
+  - Enhanced icon visibility with thicker strokes and better color contrast
+- **Files Modified**: `src/main/system-tray.ts`
+
 ### Error Handling
 - Input validation for all user inputs
 - Graceful degradation for system integration failures
