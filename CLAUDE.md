@@ -73,6 +73,11 @@ src/
 - `npm run dist`: Create distributable packages
 - `npm run dist:mac`: Build macOS-specific distribution (DMG + ZIP)
 - `npm run dist:all`: Build for all platforms (macOS, Windows, Linux)
+- `npm run lint`: Run ESLint to check code quality
+- `npm run lint:fix`: Run ESLint and automatically fix issues
+- `npm run format`: Format code with Prettier
+- `npm run format:check`: Check if code is properly formatted
+- `npm run typecheck`: Run TypeScript type checking for both main and renderer
 
 ## Architecture Details
 
