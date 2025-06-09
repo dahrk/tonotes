@@ -167,9 +167,9 @@ class PostItApp {
   }
 
   private setupGlobalShortcuts() {
-    // Note: Global shortcuts removed - all shortcuts now only work when note windows are focused
-    // Users can create notes via system tray when no notes are focused
-    // This prevents conflicts with other applications and follows expected desktop app behavior
+    // Global shortcuts intentionally removed to prevent conflicts with other applications.
+    // All shortcuts now only work when note windows are focused for better UX.
+    // Users can create notes via system tray when no notes are focused.
   }
 
   private updateTrayNoteCount() {
