@@ -409,7 +409,7 @@ export class SettingsWindow {
 
   public updateSettings(newSettings: Partial<AppSettings>): AppSettings {
     this.settings = { ...this.settings, ...newSettings };
-    
+
     // Handle launch on startup setting
     if (newSettings.launchOnStartup !== undefined) {
       if (process.platform === 'darwin' || process.platform === 'win32') {

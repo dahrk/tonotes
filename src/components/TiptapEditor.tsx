@@ -31,21 +31,22 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   // Helper function to process inline markdown
   const processInlineMarkdown = (text: string): string => {
-    return text
-      // Bold and italic (order matters)
-      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Inline code
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-      // Links
-      .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>');
+    return (
+      text
+        // Bold and italic (order matters)
+        .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Inline code
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        // Links
+        .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>')
+    );
   };
 
   // Convert markdown to HTML for initial content
   const markdownToHtml = (markdown: string): string => {
     if (!markdown.trim()) return '<p></p>';
-
 
     // Split content into lines to process line by line for better task list handling
     const lines = markdown.split('\n');
@@ -57,7 +58,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      
+
       // Handle code blocks
       if (line.startsWith('```')) {
         if (inCodeBlock) {
@@ -101,7 +102,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         const indent = taskMatch[1];
         const checked = taskMatch[2] === 'x';
         const content = taskMatch[3];
-        
+
         if (!inTaskList) {
           // Close other lists
           if (inRegularList) {
@@ -115,11 +116,14 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           processedLines.push('<ul data-type="taskList">');
           inTaskList = true;
         }
-        
+
         // Preserve indentation by adding CSS margin based on indent level
         const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(`<li data-type="taskItem" data-checked="${checked}"${marginStyle}>${processInlineMarkdown(content)}</li>`);
+        const marginStyle =
+          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(
+          `<li data-type="taskItem" data-checked="${checked}"${marginStyle}>${processInlineMarkdown(content)}</li>`
+        );
         continue;
       }
 
@@ -128,7 +132,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       if (listMatch && !line.includes('[ ]') && !line.includes('[x]')) {
         const indent = listMatch[1];
         const content = listMatch[2];
-        
+
         if (!inRegularList) {
           // Close other lists
           if (inTaskList) {
@@ -142,11 +146,14 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           processedLines.push('<ul>');
           inRegularList = true;
         }
-        
+
         // Preserve indentation by adding CSS margin based on indent level
         const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(`<li${marginStyle}>${processInlineMarkdown(content)}</li>`);
+        const marginStyle =
+          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(
+          `<li${marginStyle}>${processInlineMarkdown(content)}</li>`
+        );
         continue;
       }
 
@@ -155,7 +162,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       if (orderedMatch) {
         const indent = orderedMatch[1];
         const content = orderedMatch[2];
-        
+
         if (!inOrderedList) {
           // Close other lists
           if (inTaskList) {
@@ -169,11 +176,14 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           processedLines.push('<ol>');
           inOrderedList = true;
         }
-        
+
         // Preserve indentation by adding CSS margin based on indent level
         const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
-        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
-        processedLines.push(`<li${marginStyle}>${processInlineMarkdown(content)}</li>`);
+        const marginStyle =
+          indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(
+          `<li${marginStyle}>${processInlineMarkdown(content)}</li>`
+        );
         continue;
       }
 
@@ -196,7 +206,9 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       if (headerMatch) {
         const level = headerMatch[1].length;
         const content = headerMatch[2];
-        processedLines.push(`<h${level}>${processInlineMarkdown(content)}</h${level}>`);
+        processedLines.push(
+          `<h${level}>${processInlineMarkdown(content)}</h${level}>`
+        );
         continue;
       }
 
@@ -318,7 +330,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         // Handle Tab for indentation
         if (event.key === 'Tab') {
           event.preventDefault();
-          
+
           // Check if we're in a task item and use Tiptap's built-in commands
           if (editor && editor.isActive('taskItem')) {
             if (event.shiftKey) {
@@ -406,7 +418,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const htmlToMarkdown = (html: string): string => {
     if (!html || html === '<p></p>') return '';
 
-
     let markdown = html
       // Don't normalize whitespace too aggressively - preserve structure
       .replace(/>\s+</g, '><')
@@ -444,7 +455,12 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           const taskItems: string[] = [];
           content.replace(
             /<li[^>]*data-checked="(true|false)"[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
-            (_: string, checked: string, marginStr: string, itemContent: string) => {
+            (
+              _: string,
+              checked: string,
+              marginStr: string,
+              itemContent: string
+            ) => {
               const checkbox = checked === 'true' ? '[x]' : '[ ]';
               const marginPx = marginStr ? parseInt(marginStr) : 0;
               const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
@@ -500,31 +516,32 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       .replace(/<[^>]*>/g, '')
 
       // Clean up whitespace more carefully - allow single newlines between list items
-      .replace(/\n{3,}/g, '\n\n')  // Replace 3+ newlines with double newline
-      .replace(/^\n+/, '')         // Remove leading newlines
-      .replace(/\n+$/, '')         // Remove trailing newlines
+      .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with double newline
+      .replace(/^\n+/, '') // Remove leading newlines
+      .replace(/\n+$/, '') // Remove trailing newlines
       .trim();
 
     return markdown;
   };
-
 
   // Update editor content when prop changes
   useEffect(() => {
     if (editor && content !== lastContent && !isUpdating) {
       setIsUpdating(true);
       const html = markdownToHtml(content);
-      
+
       // Force content update with immediate render
       editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
-      
+
       // Ensure the editor renders the content properly
       setTimeout(() => {
         if (editor && !editor.isDestroyed) {
           // Force a re-render to ensure all markdown elements are properly displayed
           const currentContent = editor.getHTML();
           if (currentContent !== html) {
-            editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
+            editor.commands.setContent(html, false, {
+              preserveWhitespace: 'full',
+            });
           }
         }
         setLastContent(content);
@@ -556,7 +573,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onSave]);
-
 
   const handleMentionSelect = useCallback(
     (selectedNote: any) => {

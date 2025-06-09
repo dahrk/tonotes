@@ -208,7 +208,7 @@ class PostItApp {
     // Update settings using the proper method
     if (this.settingsWindow) {
       this.settingsWindow.updateSettings({ alwaysOnTop: newAlwaysOnTop });
-      
+
       // Update system tray to reflect new state
       this.systemTray?.updateTrayMenu();
     }

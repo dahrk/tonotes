@@ -70,11 +70,11 @@ export class SystemTray {
 
   private updateContextMenu() {
     const notes = this.onGetAllNotes();
-    
+
     // Get current always-on-top setting
     const settings = (global as any).postItApp?.settingsWindow?.getSettings();
     const alwaysOnTop = settings?.alwaysOnTop ?? true;
-    
+
     const menuTemplate: any[] = [
       {
         label: '📝 New Note',
