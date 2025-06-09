@@ -70,6 +70,11 @@ export class SystemTray {
 
   private updateContextMenu() {
     const notes = this.onGetAllNotes();
+    
+    // Get current always-on-top setting
+    const settings = (global as any).postItApp?.settingsWindow?.getSettings();
+    const alwaysOnTop = settings?.alwaysOnTop ?? true;
+    
     const menuTemplate: any[] = [
       {
         label: '📝 New Note',
@@ -86,6 +91,16 @@ export class SystemTray {
         accelerator: 'CmdOrCtrl+Shift+F',
         click: () => {
           this.onShowSearch();
+        },
+      },
+      {
+        type: 'separator',
+      },
+      {
+        label: `${alwaysOnTop ? '✅' : '☐'} Always on Top`,
+        accelerator: 'CmdOrCtrl+Shift+A',
+        click: () => {
+          (global as any).postItApp?.toggleAlwaysOnTopGlobal();
         },
       },
     ];

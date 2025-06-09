@@ -183,6 +183,11 @@ class PostItApp {
       globalShortcut.register('CommandOrControl+Shift+F', () => {
         this.searchWindow?.show();
       });
+
+      // Cmd/Ctrl + Shift + A - Toggle always on top
+      globalShortcut.register('CommandOrControl+Shift+A', () => {
+        this.toggleAlwaysOnTopGlobal();
+      });
     } catch (error) {
       console.warn('Failed to register global shortcuts:', error);
     }
@@ -191,6 +196,34 @@ class PostItApp {
   private updateTrayNoteCount() {
     const noteCount = this.noteWindows.size;
     this.systemTray?.updateTrayTitle(noteCount);
+  }
+
+  public toggleAlwaysOnTopGlobal() {
+    // Get current state from settings
+    const currentSettings = this.settingsWindow?.getSettings();
+    if (!currentSettings) return;
+
+    const newAlwaysOnTop = !currentSettings.alwaysOnTop;
+
+    // Update settings using the proper method
+    if (this.settingsWindow) {
+      this.settingsWindow.updateSettings({ alwaysOnTop: newAlwaysOnTop });
+      
+      // Update system tray to reflect new state
+      this.systemTray?.updateTrayMenu();
+    }
+
+    // Show notification
+    try {
+      const { Notification } = require('electron');
+      new Notification({
+        title: 'Sticky Notes',
+        body: `Always on top: ${newAlwaysOnTop ? 'Enabled' : 'Disabled'}`,
+        silent: true, // Don't play sound
+      }).show();
+    } catch (error) {
+      console.warn('Failed to show notification:', error);
+    }
   }
 
   public createNote(request: CreateNoteRequest = {}): string {

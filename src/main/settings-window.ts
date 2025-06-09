@@ -407,6 +407,31 @@ export class SettingsWindow {
     return this.settings;
   }
 
+  public updateSettings(newSettings: Partial<AppSettings>): AppSettings {
+    this.settings = { ...this.settings, ...newSettings };
+    
+    // Handle launch on startup setting
+    if (newSettings.launchOnStartup !== undefined) {
+      if (process.platform === 'darwin' || process.platform === 'win32') {
+        try {
+          app.setLoginItemSettings({
+            openAtLogin: this.settings.launchOnStartup,
+            name: 'PostIt',
+          });
+        } catch (error) {
+          console.warn('Failed to set login item settings:', error);
+        }
+      }
+    }
+
+    // Notify main process of changes
+    if ((global as any).postItApp) {
+      (global as any).postItApp.handleSettingsChange(this.settings);
+    }
+
+    return this.settings;
+  }
+
   public close() {
     if (this.window && !this.window.isDestroyed()) {
       this.window.close();
