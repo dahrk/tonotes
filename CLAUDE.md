@@ -98,12 +98,15 @@ src/
 - `Cmd/Ctrl+N`: Create new note (primary shortcut)
 - `Cmd/Ctrl+Shift+N`: Create new note (backup shortcut)
 - `Cmd/Ctrl+Shift+F`: Open global search
+- `Cmd/Ctrl+Shift+A`: Toggle always-on-top for all notes
 - `Cmd/Ctrl+S`: Save current note
 - Context menu shortcuts for common actions
 
 ### Advanced Editor Architecture
 - **Dual-Mode System**: TiptapEditor for rich text, DraggableLineEditor for drag operations
 - **Real-Time Markdown**: Bidirectional HTML ↔ Markdown conversion with Tiptap
+- **Enhanced Initialization**: Improved markdown-to-HTML conversion for proper rendering on note reopen
+- **Robust Task Lists**: Line-by-line processing ensures checkboxes and formatting display correctly
 - **Drag & Drop Integration**: @dnd-kit with sortable contexts and visual feedback
 - **Auto-Resizing Textareas**: Dynamic height adjustment during inline editing
 - **Interactive Elements**: Click-to-toggle checkboxes in both editing modes
@@ -125,3 +128,17 @@ src/
 - `notes`: Core note data with content, position, size, and timestamps
 - `tags`: Tag definitions with normalized names and metadata
 - `note_tags`: Many-to-many relationship between notes and tags with referential integrity
+
+## Recent Enhancements
+
+### Critical Markdown Rendering Fix
+- **Problem Solved**: Notes now properly display formatted markdown when reopened (checkboxes, headers, lists)
+- **Root Cause**: Timing issues in editor initialization and inadequate markdown-to-HTML conversion
+- **Solution**: Complete rewrite of markdownToHtml function with line-by-line processing
+- **Impact**: Seamless editing experience with consistent formatting across sessions
+
+### Always-on-Top Keyboard Toggle
+- **New Feature**: CMD+Shift+A global shortcut to toggle always-on-top for all notes
+- **System Integration**: Desktop notifications, system tray updates, and settings persistence
+- **User Experience**: Instant feedback with visual indicators in tray menu
+- **Implementation**: Robust settings management with programmatic updates
