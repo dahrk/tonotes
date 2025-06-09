@@ -24,6 +24,7 @@
   "build": {
     "appId": "com.example.tonotes",
     "productName": "Sticky Notes",
+    "icon": "assets/icon.png",
     "compression": "maximum",
     "directories": {
       "output": "release",
