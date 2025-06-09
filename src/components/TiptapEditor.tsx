@@ -117,16 +117,17 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           inTaskList = true;
         }
         
-        // For now, preserve indentation as spaces within the content to keep it simple
-        // Tiptap will handle the proper nesting through its commands
-        const indentSpaces = indent;
-        processedLines.push(`<li data-type="taskItem" data-checked="${checked}">${indentSpaces}${processInlineMarkdown(content)}</li>`);
+        // Preserve indentation by adding CSS margin based on indent level
+        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
+        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(`<li data-type="taskItem" data-checked="${checked}"${marginStyle}>${processInlineMarkdown(content)}</li>`);
         continue;
       }
 
       // Handle regular list items
       const listMatch = line.match(/^(\s*)- (.*)$/);
       if (listMatch && !line.includes('[ ]') && !line.includes('[x]')) {
+        const indent = listMatch[1];
         const content = listMatch[2];
         
         if (!inRegularList) {
@@ -143,13 +144,17 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           inRegularList = true;
         }
         
-        processedLines.push(`<li>${processInlineMarkdown(content)}</li>`);
+        // Preserve indentation by adding CSS margin based on indent level
+        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
+        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(`<li${marginStyle}>${processInlineMarkdown(content)}</li>`);
         continue;
       }
 
       // Handle ordered list items
       const orderedMatch = line.match(/^(\s*)\d+\. (.*)$/);
       if (orderedMatch) {
+        const indent = orderedMatch[1];
         const content = orderedMatch[2];
         
         if (!inOrderedList) {
@@ -166,7 +171,10 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           inOrderedList = true;
         }
         
-        processedLines.push(`<li>${processInlineMarkdown(content)}</li>`);
+        // Preserve indentation by adding CSS margin based on indent level
+        const indentLevel = Math.floor(indent.length / 2); // 2 spaces = 1 level
+        const marginStyle = indentLevel > 0 ? ` style="margin-left: ${indentLevel * 20}px;"` : '';
+        processedLines.push(`<li${marginStyle}>${processInlineMarkdown(content)}</li>`);
         continue;
       }
 
@@ -436,10 +444,13 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         (match, content) => {
           const taskItems: string[] = [];
           content.replace(
-            /<li[^>]*data-checked="(true|false)"[^>]*>\s*(.*?)\s*<\/li>/gi,
-            (_: string, checked: string, itemContent: string) => {
+            /<li[^>]*data-checked="(true|false)"[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
+            (_: string, checked: string, marginStr: string, itemContent: string) => {
               const checkbox = checked === 'true' ? '[x]' : '[ ]';
-              taskItems.push(`- ${checkbox} ${itemContent.trim()}`);
+              const marginPx = marginStr ? parseInt(marginStr) : 0;
+              const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
+              const indent = '  '.repeat(indentLevel); // 2 spaces per level
+              taskItems.push(`${indent}- ${checkbox} ${itemContent.trim()}`);
               return '';
             }
           );
@@ -451,9 +462,12 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
         const listItems: string[] = [];
         content.replace(
-          /<li[^>]*>\s*(.*?)\s*<\/li>/gi,
-          (_: string, itemContent: string) => {
-            listItems.push(`- ${itemContent.trim()}`);
+          /<li[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
+          (_: string, marginStr: string, itemContent: string) => {
+            const marginPx = marginStr ? parseInt(marginStr) : 0;
+            const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
+            const indent = '  '.repeat(indentLevel); // 2 spaces per level
+            listItems.push(`${indent}- ${itemContent.trim()}`);
             return '';
           }
         );
@@ -465,9 +479,12 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         const listItems: string[] = [];
         let counter = 1;
         content.replace(
-          /<li[^>]*>\s*(.*?)\s*<\/li>/gi,
-          (_: string, itemContent: string) => {
-            listItems.push(`${counter++}. ${itemContent.trim()}`);
+          /<li[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
+          (_: string, marginStr: string, itemContent: string) => {
+            const marginPx = marginStr ? parseInt(marginStr) : 0;
+            const indentLevel = Math.floor(marginPx / 20); // 20px = 1 level
+            const indent = '  '.repeat(indentLevel); // 2 spaces per level
+            listItems.push(`${indent}${counter++}. ${itemContent.trim()}`);
             return '';
           }
         );
