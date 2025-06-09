@@ -132,7 +132,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Right side controls */}
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-3">
           {/* Save button */}
           {hasUnsavedChanges && (
             <button
