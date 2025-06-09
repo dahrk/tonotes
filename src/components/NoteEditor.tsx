@@ -13,8 +13,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
   content,
   onChange,
   onSave,
-  placeholder = "Start typing...",
-  onNoteLink
+  placeholder = 'Start typing...',
+  onNoteLink,
 }) => {
   return (
     <TiptapEditor

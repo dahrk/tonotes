@@ -18,9 +18,9 @@ export class SettingsWindow {
       launchOnStartup: false,
       theme: 'system',
       autoSaveInterval: 30000, // 30 seconds
-      alwaysOnTop: true
+      alwaysOnTop: true,
     };
-    
+
     this.setupIPCHandlers();
   }
 
@@ -36,7 +36,8 @@ export class SettingsWindow {
 
   private createWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    const { width: screenWidth, height: screenHeight } =
+      primaryDisplay.workAreaSize;
 
     this.window = new BrowserWindow({
       width: 450,
@@ -52,12 +53,14 @@ export class SettingsWindow {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'settings-preload.js')
-      }
+        preload: path.join(__dirname, 'settings-preload.js'),
+      },
     });
 
     const settingsHTML = this.createSettingsHTML();
-    this.window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(settingsHTML)}`);
+    this.window.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(settingsHTML)}`
+    );
 
     this.window.on('closed', () => {
       this.window = null;
@@ -353,34 +356,40 @@ export class SettingsWindow {
         }
 
         // Validate theme setting
-        if (newSettings.theme && !['system', 'light', 'dark'].includes(newSettings.theme)) {
+        if (
+          newSettings.theme &&
+          !['system', 'light', 'dark'].includes(newSettings.theme)
+        ) {
           newSettings.theme = 'system';
         }
 
         // Validate auto-save interval (minimum 5 seconds, maximum 5 minutes)
         if (newSettings.autoSaveInterval) {
-          newSettings.autoSaveInterval = Math.max(5000, Math.min(300000, newSettings.autoSaveInterval));
+          newSettings.autoSaveInterval = Math.max(
+            5000,
+            Math.min(300000, newSettings.autoSaveInterval)
+          );
         }
 
         this.settings = { ...this.settings, ...newSettings };
-        
+
         // Handle launch on startup setting
         if (process.platform === 'darwin' || process.platform === 'win32') {
           try {
             app.setLoginItemSettings({
               openAtLogin: this.settings.launchOnStartup,
-              name: 'PostIt'
+              name: 'PostIt',
             });
           } catch (error) {
             console.warn('Failed to set login item settings:', error);
           }
         }
-        
+
         // Notify main process of theme change
         if ((global as any).postItApp) {
           (global as any).postItApp.handleSettingsChange(this.settings);
         }
-        
+
         this.close();
         return this.settings;
       } catch (error) {

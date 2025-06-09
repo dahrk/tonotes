@@ -29,7 +29,7 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
         setAllTags(tags); // Fallback to current tags
       }
     };
-    
+
     loadAllTags();
   }, [tags]);
 
@@ -38,12 +38,15 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
     const checkOverflow = () => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        const hasHorizontalOverflow = container.scrollWidth > container.clientWidth;
+        const hasHorizontalOverflow =
+          container.scrollWidth > container.clientWidth;
         const scrollLeft = container.scrollLeft;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
-        
+
         setOverflowLeft(hasHorizontalOverflow && scrollLeft > 5);
-        setOverflowRight(hasHorizontalOverflow && scrollLeft < maxScrollLeft - 5);
+        setOverflowRight(
+          hasHorizontalOverflow && scrollLeft < maxScrollLeft - 5
+        );
       }
     };
 
@@ -52,7 +55,7 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
       checkOverflow();
       container.addEventListener('scroll', checkOverflow);
       window.addEventListener('resize', checkOverflow);
-      
+
       return () => {
         container.removeEventListener('scroll', checkOverflow);
         window.removeEventListener('resize', checkOverflow);
@@ -60,38 +63,47 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
     }
   }, [tags]);
 
-  const handleTagAdd = useCallback(async (tagName: string) => {
-    if (!tagName.trim()) return;
+  const handleTagAdd = useCallback(
+    async (tagName: string) => {
+      if (!tagName.trim()) return;
 
-    try {
-      // Create or get existing tag
-      const tagId = await window.electronAPI.createTag(tagName.trim());
-      
-      // Add tag to note
-      await window.electronAPI.addTagToNote(noteId, tagId);
-      
-      // Update local tags
-      const newTag = { id: tagId, name: tagName.trim().toLowerCase().replace(/\s+/g, '-') };
-      const updatedTags = [...tags, newTag];
-      onTagsChange(updatedTags);
-      
-      setInputValue('');
-      setIsEditing(false);
-      setShowSuggestions(false);
-    } catch (error) {
-      console.error('Failed to add tag:', error);
-    }
-  }, [noteId, tags, onTagsChange]);
+      try {
+        // Create or get existing tag
+        const tagId = await window.electronAPI.createTag(tagName.trim());
 
-  const handleTagRemove = useCallback(async (tagId: number) => {
-    try {
-      await window.electronAPI.removeTagFromNote(noteId, tagId);
-      const updatedTags = tags.filter(tag => tag.id !== tagId);
-      onTagsChange(updatedTags);
-    } catch (error) {
-      console.error('Failed to remove tag:', error);
-    }
-  }, [noteId, tags, onTagsChange]);
+        // Add tag to note
+        await window.electronAPI.addTagToNote(noteId, tagId);
+
+        // Update local tags
+        const newTag = {
+          id: tagId,
+          name: tagName.trim().toLowerCase().replace(/\s+/g, '-'),
+        };
+        const updatedTags = [...tags, newTag];
+        onTagsChange(updatedTags);
+
+        setInputValue('');
+        setIsEditing(false);
+        setShowSuggestions(false);
+      } catch (error) {
+        console.error('Failed to add tag:', error);
+      }
+    },
+    [noteId, tags, onTagsChange]
+  );
+
+  const handleTagRemove = useCallback(
+    async (tagId: number) => {
+      try {
+        await window.electronAPI.removeTagFromNote(noteId, tagId);
+        const updatedTags = tags.filter(tag => tag.id !== tagId);
+        onTagsChange(updatedTags);
+      } catch (error) {
+        console.error('Failed to remove tag:', error);
+      }
+    },
+    [noteId, tags, onTagsChange]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -112,27 +124,25 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
     setShowSuggestions(value.length > 0);
   };
 
-  const filteredSuggestions = allTags.filter(tag => 
-    !tags.some(t => t.id === tag.id) &&
-    tag.name.toLowerCase().includes(inputValue.toLowerCase())
+  const filteredSuggestions = allTags.filter(
+    tag =>
+      !tags.some(t => t.id === tag.id) &&
+      tag.name.toLowerCase().includes(inputValue.toLowerCase())
   );
 
   return (
     <div className="flex items-center flex-1 min-w-0">
       {/* Tags wrapper with fade indicators */}
-      <div 
+      <div
         ref={wrapperRef}
         className="tags-wrapper"
         data-overflow-left={overflowLeft}
         data-overflow-right={overflowRight}
       >
         {/* Scrollable tags container */}
-        <div 
-          ref={scrollContainerRef}
-          className="tag-scrollable-container"
-        >
+        <div ref={scrollContainerRef} className="tag-scrollable-container">
           {/* Existing tags */}
-          {tags.map((tag) => (
+          {tags.map(tag => (
             <div
               key={tag.id}
               className="tag-pill group flex items-center space-x-1 flex-shrink-0"
@@ -172,11 +182,11 @@ const TagInput: React.FC<TagInputProps> = ({ noteId, tags, onTagsChange }) => {
               className="tag-input"
               autoFocus
             />
-            
+
             {/* Tag suggestions */}
             {showSuggestions && filteredSuggestions.length > 0 && (
               <div className="tag-suggestions">
-                {filteredSuggestions.slice(0, 5).map((tag) => (
+                {filteredSuggestions.slice(0, 5).map(tag => (
                   <button
                     key={tag.id}
                     onClick={() => handleTagAdd(tag.name)}

@@ -1,5 +1,5 @@
-import { Tray, Menu, app, nativeImage, BrowserWindow, screen } from "electron";
-import * as path from "path";
+import { Tray, Menu, app, nativeImage, BrowserWindow, screen } from 'electron';
+import * as path from 'path';
 
 export class SystemTray {
   private tray: Tray | null = null;
@@ -29,7 +29,7 @@ export class SystemTray {
 
   private createTray() {
     // Use the app icon for the system tray
-    const iconPath = path.join(__dirname, "../../assets/icon.png");
+    const iconPath = path.join(__dirname, '../../assets/icon.png');
     let icon;
 
     try {
@@ -47,15 +47,15 @@ export class SystemTray {
     }
 
     this.tray = new Tray(icon);
-    this.tray.setToolTip("PostIt - Sticky Notes");
+    this.tray.setToolTip('PostIt - Sticky Notes');
 
     // Set up context menu
     this.updateContextMenu();
 
     // Handle tray click events
-    this.tray.on("click", () => {
+    this.tray.on('click', () => {
       // On macOS, clicking the tray icon should show the menu
-      if (process.platform === "darwin") {
+      if (process.platform === 'darwin') {
         this.tray?.popUpContextMenu();
       } else {
         // On other platforms, create a new note
@@ -63,7 +63,7 @@ export class SystemTray {
       }
     });
 
-    this.tray.on("right-click", () => {
+    this.tray.on('right-click', () => {
       this.tray?.popUpContextMenu();
     });
   }
@@ -72,18 +72,18 @@ export class SystemTray {
     const notes = this.onGetAllNotes();
     const menuTemplate: any[] = [
       {
-        label: "📝 New Note",
-        accelerator: "CmdOrCtrl+Shift+N",
+        label: '📝 New Note',
+        accelerator: 'CmdOrCtrl+Shift+N',
         click: () => {
           this.onCreateNote();
         },
       },
       {
-        type: "separator",
+        type: 'separator',
       },
       {
-        label: "🔍 Search Notes",
-        accelerator: "CmdOrCtrl+Shift+F",
+        label: '🔍 Search Notes',
+        accelerator: 'CmdOrCtrl+Shift+F',
         click: () => {
           this.onShowSearch();
         },
@@ -93,7 +93,7 @@ export class SystemTray {
     // Add notes section if there are any notes
     if (notes.length > 0) {
       menuTemplate.push({
-        type: "separator",
+        type: 'separator',
       });
 
       menuTemplate.push({
@@ -102,12 +102,12 @@ export class SystemTray {
       });
 
       // Add each note with status indicator
-      notes.slice(0, 10).forEach((note) => {
+      notes.slice(0, 10).forEach(note => {
         // Limit to 10 notes to avoid menu overflow
         const noteTitle =
           this.getNoteTitle(note.content) || `Note ${note.id.slice(0, 8)}`;
         const isOpen = this.onCheckWindowExists(note.id);
-        const statusIcon = isOpen ? "🟢" : "⚪";
+        const statusIcon = isOpen ? '🟢' : '⚪';
 
         menuTemplate.push({
           label: `${statusIcon} ${noteTitle}`,
@@ -135,29 +135,29 @@ export class SystemTray {
 
     menuTemplate.push(
       {
-        type: "separator",
+        type: 'separator',
       },
       {
-        label: "⚙️ Settings",
+        label: '⚙️ Settings',
         click: () => {
           this.onShowSettings();
         },
       },
       {
-        type: "separator",
+        type: 'separator',
       },
       {
-        label: "About PostIt",
+        label: 'About PostIt',
         click: () => {
           this.showAbout();
         },
       },
       {
-        type: "separator",
+        type: 'separator',
       },
       {
-        label: "🚪 Quit",
-        accelerator: process.platform === "darwin" ? "Cmd+Q" : "Ctrl+Q",
+        label: '🚪 Quit',
+        accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
         click: () => {
           app.quit();
         },
@@ -169,16 +169,16 @@ export class SystemTray {
   }
 
   private getNoteTitle(content: string): string {
-    if (!content) return "";
+    if (!content) return '';
 
     // Extract first line as title, clean up markdown
-    const firstLine = content.split("\n")[0].trim();
+    const firstLine = content.split('\n')[0].trim();
     return firstLine
-      .replace(/^#+\s*/, "") // Remove markdown headers
-      .replace(/\*\*/g, "") // Remove bold markdown
-      .replace(/\*/g, "") // Remove italic markdown
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Replace links with text
-      .replace(/@\w+/g, "") // Remove mentions
+      .replace(/^#+\s*/, '') // Remove markdown headers
+      .replace(/\*\*/g, '') // Remove bold markdown
+      .replace(/\*/g, '') // Remove italic markdown
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Replace links with text
+      .replace(/@\w+/g, '') // Remove mentions
       .substring(0, 50) // Limit length
       .trim();
   }
@@ -191,7 +191,7 @@ export class SystemTray {
       minimizable: false,
       maximizable: false,
       alwaysOnTop: true,
-      titleBarStyle: "hiddenInset",
+      titleBarStyle: 'hiddenInset',
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -277,15 +277,15 @@ export class SystemTray {
       </svg>
     `;
 
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
   }
 
   public updateTrayTitle(noteCount: number) {
     if (this.tray) {
-      const title = noteCount > 0 ? `${noteCount}` : "";
+      const title = noteCount > 0 ? `${noteCount}` : '';
       this.tray.setTitle(title);
       this.tray.setToolTip(
-        `PostIt - ${noteCount} note${noteCount !== 1 ? "s" : ""}`
+        `PostIt - ${noteCount} note${noteCount !== 1 ? 's' : ''}`
       );
       // Update context menu with latest notes
       this.updateContextMenu();

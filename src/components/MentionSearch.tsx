@@ -22,7 +22,7 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
   query,
   onSelect,
   onClose,
-  isVisible
+  isVisible,
 }) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -40,58 +40,60 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
     try {
       // Get all notes first
       const allNotes = await window.electronAPI.getAllNotes();
-      
+
       // Score and filter notes
       const scoredResults = await Promise.all(
         allNotes.map(async (note: Note) => {
           const noteTags = await window.electronAPI.getNoteTags(note.id);
-          
+
           // Calculate relevance score
           let score = 0;
           const titlePreview = note.content.split('\n')[0] || 'Untitled';
-          
+
           // Content match (higher score for earlier matches)
           const contentLower = note.content.toLowerCase();
           const queryLower = searchQuery.toLowerCase();
-          
+
           if (contentLower.includes(queryLower)) {
             const index = contentLower.indexOf(queryLower);
             score += Math.max(100 - index, 10); // Earlier matches score higher
           }
-          
+
           // Title match (highest score)
           if (titlePreview.toLowerCase().includes(queryLower)) {
             score += 200;
           }
-          
+
           // Tag match
-          const tagMatches = noteTags.filter((tag: Tag) => 
+          const tagMatches = noteTags.filter((tag: Tag) =>
             tag.name.toLowerCase().includes(queryLower)
           );
           score += tagMatches.length * 50;
-          
+
           // Recency bonus (more recent = higher score)
-          const daysSinceUpdate = (Date.now() - new Date(note.updated_at).getTime()) / (1000 * 60 * 60 * 24);
+          const daysSinceUpdate =
+            (Date.now() - new Date(note.updated_at).getTime()) /
+            (1000 * 60 * 60 * 24);
           score += Math.max(50 - daysSinceUpdate, 0);
-          
+
           return {
             id: note.id,
             title: titlePreview.substring(0, 50),
             content: note.content.substring(0, 100),
             tags: noteTags,
             updated_at: note.updated_at,
-            score
+            score,
           };
         })
       );
-      
+
       // Filter notes with score > 0, sort by score, take top 3
       const filteredResults = scoredResults
         .filter(result => result.score > 0)
         .sort((a, b) => b.score - a.score)
         .slice(0, 3)
         .map(({ score, ...result }) => result); // Remove score from final result
-      
+
       setResults(filteredResults);
       setSelectedIndex(0);
     } catch (error) {
@@ -123,7 +125,9 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex(prev => (prev - 1 + results.length) % results.length);
+          setSelectedIndex(
+            prev => (prev - 1 + results.length) % results.length
+          );
           break;
         case 'Enter':
           e.preventDefault();
@@ -159,14 +163,12 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
         position: 'absolute',
         top: position.top,
         left: position.left,
-        zIndex: 1000
+        zIndex: 1000,
       }}
       tabIndex={-1}
     >
       {isLoading ? (
-        <div className="mention-search-loading">
-          Searching...
-        </div>
+        <div className="mention-search-loading">Searching...</div>
       ) : results.length > 0 ? (
         <div className="mention-search-results">
           {results.map((result, index) => (
@@ -179,9 +181,7 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
               <div className="mention-search-title">
                 {result.title || 'Untitled'}
               </div>
-              <div className="mention-search-content">
-                {result.content}...
-              </div>
+              <div className="mention-search-content">{result.content}...</div>
               {result.tags.length > 0 && (
                 <div className="mention-search-tags">
                   {result.tags.slice(0, 2).map(tag => (
@@ -190,7 +190,9 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
                     </span>
                   ))}
                   {result.tags.length > 2 && (
-                    <span className="mention-search-tag">+{result.tags.length - 2}</span>
+                    <span className="mention-search-tag">
+                      +{result.tags.length - 2}
+                    </span>
                   )}
                 </div>
               )}
@@ -198,9 +200,7 @@ const MentionSearch: React.FC<MentionSearchProps> = ({
           ))}
         </div>
       ) : (
-        <div className="mention-search-empty">
-          No notes found for "{query}"
-        </div>
+        <div className="mention-search-empty">No notes found for "{query}"</div>
       )}
     </div>
   );

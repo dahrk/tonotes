@@ -3,8 +3,9 @@ import type { AppSettings } from './settings-window';
 
 const settingsAPI = {
   getSettings: () => ipcRenderer.invoke('get-settings'),
-  saveSettings: (settings: AppSettings) => ipcRenderer.invoke('save-settings', settings),
-  closeSettings: () => ipcRenderer.invoke('close-settings')
+  saveSettings: (settings: AppSettings) =>
+    ipcRenderer.invoke('save-settings', settings),
+  closeSettings: () => ipcRenderer.invoke('close-settings'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', settingsAPI);

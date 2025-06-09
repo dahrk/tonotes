@@ -1,4 +1,11 @@
-import { app, BrowserWindow, screen, ipcMain, nativeTheme, globalShortcut } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  screen,
+  ipcMain,
+  nativeTheme,
+  globalShortcut,
+} from 'electron';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '../database/database';
@@ -8,7 +15,10 @@ import { SettingsWindow } from './settings-window';
 import type { Note, CreateNoteRequest, UpdateNoteRequest } from '../types';
 
 // Disable unused Electron features for smaller bundle
-app.commandLine.appendSwitch('disable-features', 'SpellChecker,PrintPreview,MediaRouter');
+app.commandLine.appendSwitch(
+  'disable-features',
+  'SpellChecker,PrintPreview,MediaRouter'
+);
 app.commandLine.appendSwitch('disable-http-cache');
 app.commandLine.appendSwitch('disable-gpu-sandbox');
 
@@ -31,7 +41,7 @@ class PostItApp {
     });
 
     app.on('window-all-closed', () => {
-      // Don't quit on macOS when all windows are closed, 
+      // Don't quit on macOS when all windows are closed,
       // since we have a system tray that should keep the app running
     });
 
@@ -48,10 +58,10 @@ class PostItApp {
 
   private async initialize() {
     await this.database.initialize();
-    
+
     // Initialize system tray, search, and settings windows
     this.initializeSystemComponents();
-    
+
     // Load existing notes
     const existingNotes = this.database.getAllNotes();
     for (const note of existingNotes) {
@@ -62,7 +72,7 @@ class PostItApp {
     if (existingNotes.length === 0) {
       this.createNote();
     }
-    
+
     // Update tray with note count
     this.updateTrayNoteCount();
   }
@@ -111,7 +121,7 @@ class PostItApp {
 
   private applyTheme(theme: 'system' | 'light' | 'dark') {
     let effectiveTheme: 'light' | 'dark';
-    
+
     if (theme === 'system') {
       effectiveTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
     } else {
@@ -185,53 +195,60 @@ class PostItApp {
 
   public createNote(request: CreateNoteRequest = {}): string {
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-    
+    const { width: screenWidth, height: screenHeight } =
+      primaryDisplay.workAreaSize;
+
     const noteId = uuidv4();
-    const colors: Array<'yellow' | 'pink' | 'blue'> = ['yellow', 'pink', 'blue'];
+    const colors: Array<'yellow' | 'pink' | 'blue'> = [
+      'yellow',
+      'pink',
+      'blue',
+    ];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    
+
     // Center new notes on screen with slight offset for multiple notes
     const baseX = Math.floor(screenWidth / 2 - 200);
     const baseY = Math.floor(screenHeight / 2 - 200);
     const offset = this.noteWindows.size * 30; // Offset each new note by 30px
-    
+
     const note: Note = {
       id: noteId,
       content: request.content || '',
       color: request.color || randomColor,
-      position_x: request.position_x || Math.min(baseX + offset, screenWidth - 400),
-      position_y: request.position_y || Math.min(baseY + offset, screenHeight - 400),
+      position_x:
+        request.position_x || Math.min(baseX + offset, screenWidth - 400),
+      position_y:
+        request.position_y || Math.min(baseY + offset, screenHeight - 400),
       width: 400,
       height: 400,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     this.database.createNote(note);
     this.createNoteWindow(note);
     this.updateTrayNoteCount();
-    
+
     // Focus the new note window
     const newWindow = this.noteWindows.get(noteId);
     if (newWindow) {
       newWindow.focus();
       newWindow.show();
     }
-    
+
     return noteId;
   }
 
   private createNoteWindow(note: Note) {
     const settings = this.settingsWindow?.getSettings();
     const alwaysOnTop = settings?.alwaysOnTop ?? true;
-    
+
     const noteWindow = new BrowserWindow({
       x: note.position_x,
       y: note.position_y,
       width: note.width,
       height: note.height,
-      minWidth: 320,  // Enough for: tags + buttons + padding
+      minWidth: 320, // Enough for: tags + buttons + padding
       minHeight: 200, // Enough for: header + some content
       frame: false,
       transparent: false,
@@ -252,8 +269,8 @@ class PostItApp {
         preload: path.join(__dirname, 'preload.js'),
         devTools: process.env.NODE_ENV === 'development',
         enableBlinkFeatures: '',
-        disableBlinkFeatures: 'AutomationControlled'
-      }
+        disableBlinkFeatures: 'AutomationControlled',
+      },
     });
 
     // Set window level for true always-on-top behavior on macOS
@@ -268,7 +285,7 @@ class PostItApp {
       noteWindow.webContents.openDevTools();
     } else {
       noteWindow.loadFile(path.join(__dirname, '../../index.html'), {
-        query: { noteId: note.id }
+        query: { noteId: note.id },
       });
     }
 
@@ -278,7 +295,7 @@ class PostItApp {
       this.database.updateNote({
         id: note.id,
         position_x: x,
-        position_y: y
+        position_y: y,
       });
     });
 
@@ -287,7 +304,7 @@ class PostItApp {
       this.database.updateNote({
         id: note.id,
         width,
-        height
+        height,
       });
     });
 
@@ -381,9 +398,12 @@ class PostItApp {
       this.database.addTagToNote(noteId, tagId);
     });
 
-    ipcMain.handle('remove-tag-from-note', (_, noteId: string, tagId: number) => {
-      this.database.removeTagFromNote(noteId, tagId);
-    });
+    ipcMain.handle(
+      'remove-tag-from-note',
+      (_, noteId: string, tagId: number) => {
+        this.database.removeTagFromNote(noteId, tagId);
+      }
+    );
 
     ipcMain.handle('get-note-tags', (_, noteId: string) => {
       return this.database.getNoteTags(noteId);
@@ -393,14 +413,14 @@ class PostItApp {
       return this.database.getAllTags();
     });
 
-    ipcMain.handle('close-window', (event) => {
+    ipcMain.handle('close-window', event => {
       const window = BrowserWindow.fromWebContents(event.sender);
       if (window) {
         window.close();
       }
     });
 
-    ipcMain.handle('minimize-window', (event) => {
+    ipcMain.handle('minimize-window', event => {
       const window = BrowserWindow.fromWebContents(event.sender);
       if (window) {
         window.minimize();
@@ -415,14 +435,14 @@ class PostItApp {
   private cleanup() {
     // Unregister global shortcuts
     globalShortcut.unregisterAll();
-    
+
     // Clean up system tray
     this.systemTray?.destroy();
-    
+
     // Clean up search and settings windows
     this.searchWindow?.destroy();
     this.settingsWindow?.destroy();
-    
+
     // Close all note windows
     this.noteWindows.forEach(window => {
       if (!window.isDestroyed()) {

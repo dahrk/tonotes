@@ -1,9 +1,11 @@
 # Main Process
 
 ## Purpose
+
 The Electron main process manages the application lifecycle, creates and controls BrowserWindows for sticky notes, handles database operations, and provides comprehensive system integration features including search, settings, and theme management.
 
 ## Key Responsibilities
+
 1. **Window Management**: Create/destroy note windows with always-on-top behavior
 2. **Database Operations**: All SQLite operations happen in main process for thread safety
 3. **System Integration**: System tray, global shortcuts, startup behavior, theme detection
@@ -13,6 +15,7 @@ The Electron main process manages the application lifecycle, creates and control
 7. **Theme Coordination**: Dynamic theme switching across all windows
 
 ## Key Files
+
 - `main.ts`: Application entry point, lifecycle management, and theme coordination
 - `system-tray.ts`: System tray integration with context menu and note count display
 - `search-window.ts`: Global search interface with full-text search capabilities
@@ -22,6 +25,7 @@ The Electron main process manages the application lifecycle, creates and control
 - `settings-preload.ts`: Settings window IPC bridge
 
 ## Architecture Decisions
+
 - Database operations centralized in main process to avoid concurrency issues
 - Each note gets its own BrowserWindow for true always-on-top behavior
 - Separate preload scripts for different window types to maintain security
@@ -31,6 +35,7 @@ The Electron main process manages the application lifecycle, creates and control
 - Search results limited and optimized for performance with large note collections
 
 ## System Integration Features
+
 - **System Tray**: Always-visible with note count badge and context menu
 - **Global Shortcuts**: System-wide keyboard shortcuts for common actions
 - **Theme Detection**: Automatic system theme detection with manual override

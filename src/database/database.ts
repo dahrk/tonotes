@@ -58,7 +58,7 @@ export class Database {
       INSERT INTO notes (id, content, color, position_x, position_y, width, height, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     stmt.run(
       note.id,
       note.content,
@@ -74,9 +74,11 @@ export class Database {
 
   public updateNote(request: UpdateNoteRequest): void {
     const { id, ...updates } = request;
-    const setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+    const setClause = Object.keys(updates)
+      .map(key => `${key} = ?`)
+      .join(', ');
     const values = Object.values(updates);
-    
+
     if (setClause) {
       const stmt = this.db.prepare(`
         UPDATE notes 
@@ -98,7 +100,9 @@ export class Database {
   }
 
   public getAllNotes(): Note[] {
-    const stmt = this.db.prepare('SELECT * FROM notes ORDER BY updated_at DESC');
+    const stmt = this.db.prepare(
+      'SELECT * FROM notes ORDER BY updated_at DESC'
+    );
     return stmt.all() as Note[];
   }
 
@@ -114,26 +118,32 @@ export class Database {
 
   public createTag(name: string): number {
     const normalizedName = name.toLowerCase().replace(/\s+/g, '-');
-    const stmt = this.db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
+    const stmt = this.db.prepare(
+      'INSERT OR IGNORE INTO tags (name) VALUES (?)'
+    );
     const result = stmt.run(normalizedName);
-    
+
     if (result.changes === 0) {
       // Tag already exists, get its ID
       const getStmt = this.db.prepare('SELECT id FROM tags WHERE name = ?');
       const tag = getStmt.get(normalizedName) as { id: number };
       return tag.id;
     }
-    
+
     return result.lastInsertRowid as number;
   }
 
   public addTagToNote(noteId: string, tagId: number): void {
-    const stmt = this.db.prepare('INSERT OR IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)');
+    const stmt = this.db.prepare(
+      'INSERT OR IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)'
+    );
     stmt.run(noteId, tagId);
   }
 
   public removeTagFromNote(noteId: string, tagId: number): void {
-    const stmt = this.db.prepare('DELETE FROM note_tags WHERE note_id = ? AND tag_id = ?');
+    const stmt = this.db.prepare(
+      'DELETE FROM note_tags WHERE note_id = ? AND tag_id = ?'
+    );
     stmt.run(noteId, tagId);
   }
 

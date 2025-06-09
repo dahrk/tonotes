@@ -16,7 +16,7 @@ const App: React.FC = () => {
       const loadedNote = await window.electronAPI.getNote(noteId);
       if (loadedNote) {
         setNote(loadedNote);
-        
+
         // Load tags for this note
         const noteTags = await window.electronAPI.getNoteTags(noteId);
         setTags(noteTags);
@@ -28,14 +28,14 @@ const App: React.FC = () => {
 
   const saveNote = useCallback(async () => {
     if (!note || !hasUnsavedChanges) return;
-    
+
     try {
       await window.electronAPI.updateNote({
         id: note.id,
-        content: note.content
+        content: note.content,
       });
       setHasUnsavedChanges(false);
-      
+
       // Clear auto-save timeout since we just saved
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
@@ -50,7 +50,7 @@ const App: React.FC = () => {
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
     }
-    
+
     autoSaveTimeoutRef.current = setTimeout(() => {
       saveNote();
     }, 30000); // 30 seconds
@@ -71,8 +71,10 @@ const App: React.FC = () => {
 
   const handleDelete = useCallback(async () => {
     if (!note) return;
-    
-    const confirmed = window.confirm('Are you sure you want to delete this note? This action cannot be undone.');
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this note? This action cannot be undone.'
+    );
     if (confirmed) {
       try {
         await window.electronAPI.deleteNote(note.id);
@@ -86,7 +88,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const noteId = urlParams.get('noteId');
-    
+
     if (noteId) {
       loadNote(noteId);
     }
@@ -128,12 +130,12 @@ const App: React.FC = () => {
         <div className="flex items-center" style={{ marginLeft: '70px' }}>
           {/* Empty space where tags used to be */}
         </div>
-        
+
         {/* Right side controls */}
         <div className="flex items-center space-x-1">
           {/* Save button */}
           {hasUnsavedChanges && (
-            <button 
+            <button
               onClick={saveNote}
               className="header-button"
               title="Save note (Cmd+S)"
@@ -142,7 +144,7 @@ const App: React.FC = () => {
             </button>
           )}
           {/* Delete button */}
-          <button 
+          <button
             onClick={handleDelete}
             className="header-button delete-button"
             title="Delete note"
@@ -151,20 +153,16 @@ const App: React.FC = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Tags section below header */}
       <div className="tags-section">
-        <TagInput
-          noteId={note.id}
-          tags={tags}
-          onTagsChange={setTags}
-        />
+        <TagInput noteId={note.id} tags={tags} onTagsChange={setTags} />
       </div>
-      
+
       {/* Content */}
       <NoteEditor
         content={note.content}
-        onChange={(content) => {
+        onChange={content => {
           setNote({ ...note, content });
           setHasUnsavedChanges(true);
           scheduleAutoSave();

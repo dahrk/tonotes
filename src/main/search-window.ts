@@ -25,7 +25,8 @@ export class SearchWindow {
 
   private createWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    const { width: screenWidth, height: screenHeight } =
+      primaryDisplay.workAreaSize;
 
     this.window = new BrowserWindow({
       width: 500,
@@ -41,13 +42,15 @@ export class SearchWindow {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'search-preload.js')
-      }
+        preload: path.join(__dirname, 'search-preload.js'),
+      },
     });
 
     // Load search interface
     const searchHTML = this.createSearchHTML();
-    this.window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(searchHTML)}`);
+    this.window.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(searchHTML)}`
+    );
 
     this.window.on('closed', () => {
       this.window = null;
@@ -322,23 +325,23 @@ export class SearchWindow {
         }
 
         const notes = this.database.searchNotes(query.trim());
-        
+
         // Get tags for each note and format results
         const results = await Promise.all(
-          notes.map(async (note) => {
+          notes.map(async note => {
             const tags = this.database.getNoteTags(note.id);
             const title = note.content.split('\n')[0] || 'Untitled';
-            
+
             return {
               id: note.id,
               title: title.substring(0, 50),
               content: note.content.substring(0, 200), // Limit content length for performance
               tags,
-              updated_at: note.updated_at
+              updated_at: note.updated_at,
             };
           })
         );
-        
+
         return results;
       } catch (error) {
         console.error('Search error:', error);
