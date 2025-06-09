@@ -30,11 +30,195 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [lastContent, setLastContent] = useState(content);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Helper function to process inline markdown
+  const processInlineMarkdown = (text: string): string => {
+    return text
+      // Bold and italic (order matters)
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      // Links
+      .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>');
+  };
+
+  // Convert markdown to HTML for initial content
+  const markdownToHtml = (markdown: string): string => {
+    if (!markdown.trim()) return '<p></p>';
+
+    // Split content into lines to process line by line for better task list handling
+    const lines = markdown.split('\n');
+    const processedLines: string[] = [];
+    let inTaskList = false;
+    let inRegularList = false;
+    let inOrderedList = false;
+    let inCodeBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      
+      // Handle code blocks
+      if (line.startsWith('```')) {
+        if (inCodeBlock) {
+          processedLines.push('</code></pre>');
+          inCodeBlock = false;
+        } else {
+          // Close any open lists
+          if (inTaskList) {
+            processedLines.push('</ul>');
+            inTaskList = false;
+          }
+          if (inRegularList) {
+            processedLines.push('</ul>');
+            inRegularList = false;
+          }
+          if (inOrderedList) {
+            processedLines.push('</ol>');
+            inOrderedList = false;
+          }
+          processedLines.push('<pre><code>');
+          inCodeBlock = true;
+        }
+        continue;
+      }
+
+      // Skip processing if in code block
+      if (inCodeBlock) {
+        processedLines.push(line);
+        continue;
+      }
+
+      // Escape HTML in regular content
+      line = line
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Handle task list items
+      const taskMatch = line.match(/^(\s*)- \[([ x])\] (.*)$/);
+      if (taskMatch) {
+        const indent = taskMatch[1];
+        const checked = taskMatch[2] === 'x';
+        const content = taskMatch[3];
+        
+        if (!inTaskList) {
+          // Close other lists
+          if (inRegularList) {
+            processedLines.push('</ul>');
+            inRegularList = false;
+          }
+          if (inOrderedList) {
+            processedLines.push('</ol>');
+            inOrderedList = false;
+          }
+          processedLines.push('<ul data-type="taskList">');
+          inTaskList = true;
+        }
+        
+        processedLines.push(`<li data-type="taskItem" data-checked="${checked}">${processInlineMarkdown(content)}</li>`);
+        continue;
+      }
+
+      // Handle regular list items
+      const listMatch = line.match(/^(\s*)- (.*)$/);
+      if (listMatch && !line.includes('[ ]') && !line.includes('[x]')) {
+        const content = listMatch[2];
+        
+        if (!inRegularList) {
+          // Close other lists
+          if (inTaskList) {
+            processedLines.push('</ul>');
+            inTaskList = false;
+          }
+          if (inOrderedList) {
+            processedLines.push('</ol>');
+            inOrderedList = false;
+          }
+          processedLines.push('<ul>');
+          inRegularList = true;
+        }
+        
+        processedLines.push(`<li>${processInlineMarkdown(content)}</li>`);
+        continue;
+      }
+
+      // Handle ordered list items
+      const orderedMatch = line.match(/^(\s*)\d+\. (.*)$/);
+      if (orderedMatch) {
+        const content = orderedMatch[2];
+        
+        if (!inOrderedList) {
+          // Close other lists
+          if (inTaskList) {
+            processedLines.push('</ul>');
+            inTaskList = false;
+          }
+          if (inRegularList) {
+            processedLines.push('</ul>');
+            inRegularList = false;
+          }
+          processedLines.push('<ol>');
+          inOrderedList = true;
+        }
+        
+        processedLines.push(`<li>${processInlineMarkdown(content)}</li>`);
+        continue;
+      }
+
+      // Close lists if we encounter non-list content
+      if (inTaskList) {
+        processedLines.push('</ul>');
+        inTaskList = false;
+      }
+      if (inRegularList) {
+        processedLines.push('</ul>');
+        inRegularList = false;
+      }
+      if (inOrderedList) {
+        processedLines.push('</ol>');
+        inOrderedList = false;
+      }
+
+      // Handle headers
+      const headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
+      if (headerMatch) {
+        const level = headerMatch[1].length;
+        const content = headerMatch[2];
+        processedLines.push(`<h${level}>${processInlineMarkdown(content)}</h${level}>`);
+        continue;
+      }
+
+      // Handle empty lines
+      if (line.trim() === '') {
+        processedLines.push('<br>');
+        continue;
+      }
+
+      // Handle regular paragraphs
+      processedLines.push(`<p>${processInlineMarkdown(line)}</p>`);
+    }
+
+    // Close any open lists
+    if (inTaskList) {
+      processedLines.push('</ul>');
+    }
+    if (inRegularList) {
+      processedLines.push('</ul>');
+    }
+    if (inOrderedList) {
+      processedLines.push('</ol>');
+    }
+    if (inCodeBlock) {
+      processedLines.push('</code></pre>');
+    }
+
+    return processedLines.join('') || '<p></p>';
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // Disable default task list from starter kit
-        taskList: false,
         bulletList: {
           HTMLAttributes: {
             class: 'tiptap-bullet-list',
@@ -97,7 +281,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         showOnlyWhenEditable: true,
       }),
     ],
-    content: content,
+    content: markdownToHtml(content), // Always convert markdown to HTML on initialization
     editorProps: {
       attributes: {
         class: 'tiptap-editor prose prose-sm max-w-none focus:outline-none',
@@ -252,116 +436,40 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     return markdown;
   };
 
-  // Convert markdown to HTML for initial content
-  const markdownToHtml = (markdown: string): string => {
-    if (!markdown.trim()) return '<p></p>';
-
-    let html = markdown
-      // Escape existing HTML first
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-
-      // Code blocks (must be before other processing)
-      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-
-      // Headers (from h6 to h1 to avoid conflicts)
-      .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
-      .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
-      .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-
-      // Bold and italic (order matters)
-      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-
-      // Inline code (after bold/italic to avoid conflicts)
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-
-      // Links (with proper escaping)
-      .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2">$1</a>')
-
-      // Task lists (group consecutive items)
-      .replace(/^- \[[x ]\] .*$/gim, match => {
-        if (match.includes('[x]')) {
-          return match.replace(
-            /^- \[x\] (.*)$/gim,
-            '<li data-type="taskItem" data-checked="true">$1</li>'
-          );
-        } else {
-          return match.replace(
-            /^- \[ \] (.*)$/gim,
-            '<li data-type="taskItem" data-checked="false">$1</li>'
-          );
-        }
-      })
-
-      // Wrap consecutive task items in task list
-      .replace(
-        /(<li data-type="taskItem"[^>]*>.*<\/li>\s*)+/gm,
-        '<ul data-type="taskList">$&</ul>'
-      )
-
-      // Regular unordered lists
-      .replace(/^- (?!\[[x ]\]) (.*)$/gim, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>\s*)+/gm, '<ul>$&</ul>')
-
-      // Ordered lists
-      .replace(/^\d+\. (.*)$/gim, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>\s*)+/gm, match => {
-        // Only wrap if not already wrapped and not task items
-        if (
-          !match.includes('data-type="taskList"') &&
-          !match.includes('<ul>')
-        ) {
-          return '<ol>' + match + '</ol>';
-        }
-        return match;
-      })
-
-      // Line breaks
-      .replace(/\n/g, '<br>')
-
-      // Paragraphs (split by double line breaks)
-      .split(/<br><br>/)
-      .map(paragraph => {
-        if (
-          paragraph.trim() &&
-          !paragraph.includes('<h') &&
-          !paragraph.includes('<ul') &&
-          !paragraph.includes('<ol') &&
-          !paragraph.includes('<pre>')
-        ) {
-          return '<p>' + paragraph + '</p>';
-        }
-        return paragraph;
-      })
-      .join('');
-
-    // Clean up
-    html = html
-      .replace(/<br>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .replace(/>\s+</g, '><')
-      .trim();
-
-    return html || '<p></p>';
-  };
 
   // Update editor content when prop changes
   useEffect(() => {
     if (editor && content !== lastContent && !isUpdating) {
       setIsUpdating(true);
       const html = markdownToHtml(content);
-      editor.commands.setContent(html);
-      setLastContent(content);
-      // Allow other updates after a brief delay
-      setTimeout(() => setIsUpdating(false), 100);
+      
+      // Force content update with immediate render
+      editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
+      
+      // Ensure the editor renders the content properly
+      setTimeout(() => {
+        if (editor && !editor.isDestroyed) {
+          // Force a re-render to ensure all markdown elements are properly displayed
+          const currentContent = editor.getHTML();
+          if (currentContent !== html) {
+            editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
+          }
+        }
+        setLastContent(content);
+        setIsUpdating(false);
+      }, 50);
     }
   }, [editor, content, lastContent, isUpdating]);
+
+  // Ensure proper initialization when editor is created
+  useEffect(() => {
+    if (editor && content && content.trim()) {
+      // Ensure content is rendered immediately after editor creation
+      const html = markdownToHtml(content);
+      editor.commands.setContent(html, false, { preserveWhitespace: 'full' });
+      setLastContent(content);
+    }
+  }, [editor]); // Only run when editor is created
 
   // Handle keyboard shortcuts
   useEffect(() => {
