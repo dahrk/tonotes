@@ -26,7 +26,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [showMentionSearch, setShowMentionSearch] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
-  const [mentionStartPos, setMentionStartPos] = useState(0);
   const [lastContent, setLastContent] = useState(content);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -301,7 +300,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         class: 'tiptap-editor prose prose-sm max-w-none focus:outline-none',
         spellcheck: 'false',
       },
-      handleClick: (view, pos, event) => {
+      handleClick: (_, __, event) => {
         // Handle note link clicks
         const target = event.target as HTMLElement;
         if (target.tagName === 'A') {
@@ -441,7 +440,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Task lists (handle nested structure) - Properly format task items
       .replace(
         /<ul[^>]*data-type="taskList"[^>]*>(.*?)<\/ul>/gis,
-        (match, content) => {
+        (_, content) => {
           const taskItems: string[] = [];
           content.replace(
             /<li[^>]*data-checked="(true|false)"[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
@@ -459,7 +458,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       )
 
       // Regular unordered lists - Properly format list items
-      .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
+      .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (_, content) => {
         const listItems: string[] = [];
         content.replace(
           /<li[^>]*(?:style="margin-left:\s*(\d+)px;?")?[^>]*>\s*(.*?)\s*<\/li>/gi,
@@ -475,7 +474,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       })
 
       // Ordered lists - Properly format numbered items
-      .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
+      .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (_, content) => {
         const listItems: string[] = [];
         let counter = 1;
         content.replace(
@@ -558,26 +557,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onSave]);
 
-  // Handle mention detection
-  const detectMention = useCallback((text: string, cursorPosition: number) => {
-    const beforeCursor = text.substring(0, cursorPosition);
-    const atMatch = beforeCursor.match(/@(\w*)$/);
-
-    if (atMatch) {
-      const query = atMatch[1];
-      const mentionStart = cursorPosition - atMatch[0].length;
-
-      setMentionStartPos(mentionStart);
-      setMentionQuery(query);
-      setShowMentionSearch(true);
-
-      // Position dropdown near cursor (simplified)
-      setMentionPosition({ top: 100, left: 100 });
-    } else {
-      setShowMentionSearch(false);
-      setMentionQuery('');
-    }
-  }, []);
 
   const handleMentionSelect = useCallback(
     (selectedNote: any) => {
