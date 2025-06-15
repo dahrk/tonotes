@@ -94,6 +94,15 @@ A production-ready macOS desktop application for creating persistent sticky note
 - `npm run dist:mac`: Build macOS-specific distribution (DMG + ZIP)
 - `npm run dist:all`: Build for all platforms (macOS, Windows, Linux)
 
+### Testing
+
+- `npm test`: Run comprehensive test suite with Jest and React Testing Library
+- `npm run test:watch`: Run tests in watch mode for development
+- `npm run test:coverage`: Generate detailed coverage report (80%+ target)
+- `npm run test:ci`: Run tests in CI/CD mode with coverage enforcement
+
+**Testing Strategy**: The application maintains 80%+ test coverage with comprehensive unit, integration, and E2E tests covering critical user workflows including markdown preservation, window management, and settings persistence. Uses Jest's built-in mocking for Electron APIs without external dependencies. See [Testing Guide](docs/TESTING.md) for detailed information.
+
 ## User Guide
 
 ### Getting Started

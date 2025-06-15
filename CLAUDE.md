@@ -79,6 +79,10 @@ src/
 - `npm run format`: Format code with Prettier
 - `npm run format:check`: Check if code is properly formatted
 - `npm run typecheck`: Run TypeScript type checking for both main and renderer
+- `npm run test`: Run comprehensive test suite with Jest and React Testing Library
+- `npm run test:watch`: Run tests in watch mode for development
+- `npm run test:coverage`: Generate detailed coverage report (80%+ target)
+- `npm run test:ci`: Run tests in CI/CD mode with coverage enforcement
 
 ## Architecture Details
 
@@ -120,6 +124,54 @@ src/
 - **Universal Binaries**: Support for both Intel (x64) and Apple Silicon (arm64)
 - **Development Build**: Fast development iteration with Vite + Electron
 - **Production Optimization**: Minified bundles with tree-shaking and code splitting
+
+### Testing Infrastructure & Quality Assurance (December 2024)
+
+#### Comprehensive Testing Framework
+Implemented a robust testing strategy with 80%+ code coverage requirement:
+
+- **Testing Stack**: Jest + React Testing Library + custom Electron mocks for complete coverage
+- **Test Organization**: Unit, integration, and E2E tests with priority-based implementation
+- **Coverage Requirements**: 80%+ overall, 100% for critical paths (markdown, database, window management)
+- **Mock Strategy**: Comprehensive Electron API mocking for reliable, fast tests
+- **CI Integration**: Automated testing with coverage enforcement and failure prevention
+
+#### Test Categories & Priorities
+
+**Priority 1: Markdown Save/Load Cycle Tests** (Critical)
+- Complete content preservation through save/load cycles
+- Bullet list formatting without line breaks
+- Numbered list sequence maintenance (1, 2, 3 not all 1s)  
+- Nested todo indentation and checkbox rendering
+- Edge case handling (empty lines, special characters, long content)
+- JSON format support with legacy markdown fallback
+
+**Priority 2: Window Management Tests** (High)
+- System tray persistence when all windows closed
+- Window creation, positioning, and cascading
+- Always-on-top setting coordination across all windows
+- Window focus, recreation after destruction, and cleanup
+- Multi-window theme application and state management
+
+**Priority 3: User Settings Tests** (Medium)
+- Settings persistence across app restarts and window recreation
+- Theme propagation to all open windows (light/dark/system)
+- Always-on-top toggle affecting all windows simultaneously
+- Settings validation and error handling with graceful fallbacks
+
+#### E2E Testing Coverage
+- **Complete user journeys**: Note creation → editing → saving → reopening
+- **Multi-window workflows**: Creating multiple notes, system tray interactions
+- **Tag management**: Adding, removing, searching tags with autocomplete
+- **Keyboard shortcuts**: All shortcuts working correctly in context
+- **Error scenarios**: Graceful handling of API failures and edge cases
+
+#### Testing Architecture Benefits
+- **Reliability**: Catches regressions in critical user-facing functionality
+- **Documentation**: Tests serve as living documentation of expected behavior
+- **Refactoring Safety**: Enables confident code changes with regression protection
+- **Quality Gates**: Prevents broken code from reaching production
+- **Developer Experience**: Fast feedback loop with watch mode and targeted testing
 
 ### Standard Markdown Rendering Refactor (December 2024)
 
