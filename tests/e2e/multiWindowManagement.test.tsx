@@ -11,14 +11,66 @@ import { Database } from '../../src/database/database';
 import { SystemTray } from '../../src/main/system-tray';
 import { createMockNote } from '../utils/testHelpers';
 
+// Types for mocked objects
+interface MockWindow {
+  id: number;
+  loadFile: jest.MockedFunction<any>;
+  loadURL: jest.MockedFunction<any>;
+  on: jest.MockedFunction<any>;
+  once: jest.MockedFunction<any>;
+  show: jest.MockedFunction<any>;
+  hide: jest.MockedFunction<any>;
+  close: jest.MockedFunction<any>;
+  minimize: jest.MockedFunction<any>;
+  focus: jest.MockedFunction<any>;
+  setAlwaysOnTop: jest.MockedFunction<any>;
+  setVisibleOnAllWorkspaces: jest.MockedFunction<any>;
+  getPosition: jest.MockedFunction<any>;
+  getSize: jest.MockedFunction<any>;
+  isDestroyed: jest.MockedFunction<any>;
+  webContents: {
+    send: jest.MockedFunction<any>;
+    on: jest.MockedFunction<any>;
+    executeJavaScript: jest.MockedFunction<any>;
+    openDevTools: jest.MockedFunction<any>;
+  };
+}
+
+interface MockDatabase {
+  initialize: jest.MockedFunction<any>;
+  getAllNotes: jest.MockedFunction<any>;
+  createNote: jest.MockedFunction<any>;
+  updateNote: jest.MockedFunction<any>;
+  deleteNote: jest.MockedFunction<any>;
+  getNote: jest.MockedFunction<any>;
+  searchNotes: jest.MockedFunction<any>;
+  createTag: jest.MockedFunction<any>;
+  addTagToNote: jest.MockedFunction<any>;
+  removeTagFromNote: jest.MockedFunction<any>;
+  getNoteTags: jest.MockedFunction<any>;
+  getAllTags: jest.MockedFunction<any>;
+}
+
+interface MockSystemTray {
+  updateTrayTitle: jest.MockedFunction<any>;
+  updateTrayMenu: jest.MockedFunction<any>;
+  destroy: jest.MockedFunction<any>;
+  onCreateNote?: () => string;
+  onShowSearch?: () => void;
+  onShowSettings?: () => void;
+  onGetAllNotes?: () => any[];
+  onFocusNote?: (noteId: string) => boolean;
+  onCheckWindowExists?: (noteId: string) => boolean;
+}
+
 // Mock electron modules comprehensively
 jest.mock('electron', () => {
-  const mockWindows = new Map();
+  const mockWindows = new Map<number, MockWindow>();
   let windowIdCounter = 1;
 
-  const createMockWindow = () => {
+  const createMockWindow = (): MockWindow => {
     const windowId = windowIdCounter++;
-    const mockWindow = {
+    const mockWindow: MockWindow = {
       id: windowId,
       loadFile: jest.fn(),
       loadURL: jest.fn(),
@@ -37,7 +89,7 @@ jest.mock('electron', () => {
       webContents: {
         send: jest.fn(),
         on: jest.fn(),
-        executeJavaScript: jest.fn().mockResolvedValue(),
+        executeJavaScript: jest.fn().mockResolvedValue(undefined),
         openDevTools: jest.fn(),
       },
     };
@@ -48,7 +100,7 @@ jest.mock('electron', () => {
   return {
     BrowserWindow: jest.fn(() => createMockWindow()),
     app: {
-      whenReady: jest.fn().mockResolvedValue(),
+      whenReady: jest.fn().mockResolvedValue(undefined),
       on: jest.fn(),
       commandLine: {
         appendSwitch: jest.fn(),
@@ -103,16 +155,16 @@ jest.mock('../../src/database/database');
 jest.mock('../../src/main/system-tray');
 
 describe('E2E: Multi-Window Management', () => {
-  let postItApp;
-  let mockDatabase;
-  let mockSystemTray;
+  let postItApp: PostItApp;
+  let mockDatabase: MockDatabase;
+  let mockSystemTray: MockSystemTray;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Setup comprehensive database mock
     mockDatabase = {
-      initialize: jest.fn().mockResolvedValue(),
+      initialize: jest.fn().mockResolvedValue(undefined),
       getAllNotes: jest.fn(() => []),
       createNote: jest.fn(),
       updateNote: jest.fn(),
@@ -125,7 +177,7 @@ describe('E2E: Multi-Window Management', () => {
       getNoteTags: jest.fn(() => []),
       getAllTags: jest.fn(() => []),
     };
-    Database.mockImplementation(() => mockDatabase);
+    (Database as jest.MockedClass<typeof Database>).mockImplementation(() => mockDatabase as any);
 
     // Setup system tray mock with callback tracking
     mockSystemTray = {
@@ -133,14 +185,14 @@ describe('E2E: Multi-Window Management', () => {
       updateTrayMenu: jest.fn(),
       destroy: jest.fn(),
     };
-    SystemTray.mockImplementation(
+    (SystemTray as jest.MockedClass<typeof SystemTray>).mockImplementation(
       (
-        onCreateNote,
-        onShowSearch,
-        onShowSettings,
-        onGetAllNotes,
-        onFocusNote,
-        onCheckWindowExists
+        onCreateNote: () => string,
+        onShowSearch: () => void,
+        onShowSettings: () => void,
+        onGetAllNotes: () => any[],
+        onFocusNote: (noteId: string) => boolean,
+        onCheckWindowExists: (noteId: string) => boolean
       ) => {
         mockSystemTray.onCreateNote = onCreateNote;
         mockSystemTray.onShowSearch = onShowSearch;
@@ -148,13 +200,13 @@ describe('E2E: Multi-Window Management', () => {
         mockSystemTray.onGetAllNotes = onGetAllNotes;
         mockSystemTray.onFocusNote = onFocusNote;
         mockSystemTray.onCheckWindowExists = onCheckWindowExists;
-        return mockSystemTray;
+        return mockSystemTray as any;
       }
     );
 
     // Reset BrowserWindow static methods
-    BrowserWindow.getAllWindows = jest.fn(() => []);
-    BrowserWindow.fromWebContents = jest.fn(() => null);
+    (BrowserWindow as any).getAllWindows = jest.fn(() => []);
+    (BrowserWindow as any).fromWebContents = jest.fn(() => null);
   });
 
   /**
@@ -163,24 +215,28 @@ describe('E2E: Multi-Window Management', () => {
   it('manages multiple notes through complete lifecycle', async () => {
     // Initialize app
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Verify initial state - should create first note if none exist
     expect(BrowserWindow).toHaveBeenCalledTimes(1);
     expect(mockSystemTray.updateTrayTitle).toHaveBeenCalledWith(1);
 
     // Create additional notes through system tray
-    const note2Id = mockSystemTray.onCreateNote();
-    const note3Id = mockSystemTray.onCreateNote();
-    const note4Id = mockSystemTray.onCreateNote();
+    const note2Id = mockSystemTray.onCreateNote!();
+    const note3Id = mockSystemTray.onCreateNote!();
+    const note4Id = mockSystemTray.onCreateNote!();
 
     // Verify multiple windows were created
     expect(BrowserWindow).toHaveBeenCalledTimes(4);
     expect(mockSystemTray.updateTrayTitle).toHaveBeenLastCalledWith(4);
 
     // Verify window positions are cascaded
-    const windowCalls = BrowserWindow.mock.calls;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowCalls = browserWindowMock.mock.calls;
     expect(windowCalls[0][0].x).not.toEqual(windowCalls[1][0].x);
     expect(windowCalls[1][0].x).not.toEqual(windowCalls[2][0].x);
 
@@ -188,11 +244,11 @@ describe('E2E: Multi-Window Management', () => {
     const mockNote = createMockNote({ id: note2Id });
     mockDatabase.getNote.mockReturnValue(mockNote);
 
-    const focused = mockSystemTray.onFocusNote(note2Id);
+    const focused = mockSystemTray.onFocusNote!(note2Id);
     expect(focused).toBe(true);
 
     // Test checking window existence
-    const exists = mockSystemTray.onCheckWindowExists(note2Id);
+    const exists = mockSystemTray.onCheckWindowExists!(note2Id);
     expect(exists).toBe(true);
 
     // Test note deletion and window cleanup
@@ -200,9 +256,9 @@ describe('E2E: Multi-Window Management', () => {
     expect(mockDatabase.deleteNote).toHaveBeenCalledWith(note3Id);
 
     // Simulate window close event
-    const windowInstance = BrowserWindow.mock.results[2].value; // Third window
+    const windowInstance = browserWindowMock.mock.results[2].value as MockWindow; // Third window
     const closedHandler = windowInstance.on.mock.calls.find(
-      call => call[0] === 'closed'
+      (call: any[]) => call[0] === 'closed'
     )?.[1];
     if (closedHandler) {
       closedHandler();
@@ -225,24 +281,27 @@ describe('E2E: Multi-Window Management', () => {
     mockDatabase.getAllNotes.mockReturnValue(existingNotes);
 
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Test getting all notes through tray callback
-    const allNotes = mockSystemTray.onGetAllNotes();
+    const allNotes = mockSystemTray.onGetAllNotes!();
     expect(allNotes).toEqual(existingNotes);
 
     // Test creating note through tray
-    const newNoteId = mockSystemTray.onCreateNote();
+    const newNoteId = mockSystemTray.onCreateNote!();
     expect(mockDatabase.createNote).toHaveBeenCalled();
     expect(BrowserWindow).toHaveBeenCalledTimes(4); // 3 existing + 1 new
 
     // Test showing search through tray
-    mockSystemTray.onShowSearch();
+    mockSystemTray.onShowSearch!();
     // In real implementation, this would open search window
 
     // Test showing settings through tray
-    mockSystemTray.onShowSettings();
+    mockSystemTray.onShowSettings!();
     // In real implementation, this would open settings window
   });
 
@@ -251,16 +310,20 @@ describe('E2E: Multi-Window Management', () => {
    */
   it('manages window positions correctly with cascading', async () => {
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Create multiple notes and verify cascading positions
-    const positions = [];
+    const positions: Array<{ x: number; y: number }> = [];
 
     for (let i = 0; i < 5; i++) {
       const noteId = postItApp.createNote();
+      const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
       const windowCall =
-        BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
+        browserWindowMock.mock.calls[browserWindowMock.mock.calls.length - 1];
       positions.push({ x: windowCall[0].x, y: windowCall[0].y });
     }
 
@@ -286,14 +349,18 @@ describe('E2E: Multi-Window Management', () => {
     mockDatabase.getAllNotes.mockReturnValue([existingNote]);
 
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Verify window was created for existing note
     expect(BrowserWindow).toHaveBeenCalledTimes(1);
 
     // Simulate window destruction
-    const windowInstance = BrowserWindow.mock.results[0].value;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstance = browserWindowMock.mock.results[0].value as MockWindow;
     windowInstance.isDestroyed.mockReturnValue(true);
 
     // Try to focus the note - should recreate window
@@ -310,14 +377,17 @@ describe('E2E: Multi-Window Management', () => {
 
     // Mock settings
     const mockSettings = { theme: 'system', alwaysOnTop: true };
-    postItApp.settingsWindow = {
+    (postItApp as any).settingsWindow = {
       getSettings: jest.fn(() => mockSettings),
       updateSettings: jest.fn(),
       applyTheme: jest.fn(),
     };
 
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Create multiple notes
     postItApp.createNote();
@@ -328,8 +398,9 @@ describe('E2E: Multi-Window Management', () => {
     postItApp.handleSettingsChange({ theme: 'dark', alwaysOnTop: false });
 
     // Verify theme was applied to all windows
-    const windowInstances = BrowserWindow.mock.results.map(
-      result => result.value
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstances = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
     );
     windowInstances.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
@@ -347,23 +418,27 @@ describe('E2E: Multi-Window Management', () => {
 
     // Mock settings with always-on-top enabled
     const mockSettings = { alwaysOnTop: true, theme: 'system' };
-    postItApp.settingsWindow = {
+    (postItApp as any).settingsWindow = {
       getSettings: jest.fn(() => mockSettings),
-      updateSettings: jest.fn(newSettings => {
+      updateSettings: jest.fn((newSettings: any) => {
         Object.assign(mockSettings, newSettings);
       }),
     };
 
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Create multiple notes
     postItApp.createNote();
     postItApp.createNote();
 
     // Verify all windows have always-on-top
-    const windowInstances = BrowserWindow.mock.results.map(
-      result => result.value
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstances = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
     );
     windowInstances.forEach(window => {
       expect(window.setAlwaysOnTop).toHaveBeenCalledWith(true);
@@ -388,13 +463,16 @@ describe('E2E: Multi-Window Management', () => {
       createMockNote({ id: 'note3' }),
     ];
     mockDatabase.getAllNotes.mockReturnValue(notes);
-    mockDatabase.getNote.mockImplementation(id =>
-      notes.find(note => note.id === id)
+    mockDatabase.getNote.mockImplementation((id: string) =>
+      notes.find(note => note.id === id) || null
     );
 
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Focus different notes
     const focused1 = postItApp.focusNote('note2');
@@ -404,8 +482,9 @@ describe('E2E: Multi-Window Management', () => {
     expect(focused2).toBe(true);
 
     // Verify focus and show were called
-    const windowInstances = BrowserWindow.mock.results.map(
-      result => result.value
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstances = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
     );
     windowInstances.forEach(window => {
       expect(window.focus).toHaveBeenCalled();
@@ -422,8 +501,11 @@ describe('E2E: Multi-Window Management', () => {
    */
   it('properly cleans up all resources on shutdown', async () => {
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Create multiple notes
     postItApp.createNote();
@@ -431,8 +513,8 @@ describe('E2E: Multi-Window Management', () => {
     postItApp.createNote();
 
     // Simulate app shutdown
-    const beforeQuitHandler = app.on.mock.calls.find(
-      call => call[0] === 'before-quit'
+    const beforeQuitHandler = appMock.on.mock.calls.find(
+      (call: any[]) => call[0] === 'before-quit'
     )?.[1];
 
     if (beforeQuitHandler) {
@@ -443,8 +525,9 @@ describe('E2E: Multi-Window Management', () => {
     expect(mockSystemTray.destroy).toHaveBeenCalled();
 
     // Verify all windows were closed
-    const windowInstances = BrowserWindow.mock.results.map(
-      result => result.value
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstances = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
     );
     windowInstances.forEach(window => {
       expect(window.close).toHaveBeenCalled();
@@ -456,8 +539,11 @@ describe('E2E: Multi-Window Management', () => {
    */
   it('handles errors gracefully in multi-window environment', async () => {
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Mock database error during note creation
     mockDatabase.createNote.mockImplementation(() => {
@@ -470,7 +556,7 @@ describe('E2E: Multi-Window Management', () => {
     }).not.toThrow();
 
     // Mock window creation error
-    BrowserWindow.mockImplementation(() => {
+    (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mockImplementation(() => {
       throw new Error('Window creation failed');
     });
 
@@ -492,8 +578,11 @@ describe('E2E: Multi-Window Management', () => {
     mockDatabase.getAllNotes.mockReturnValue(notes);
 
     postItApp = new PostItApp();
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Simulate concurrent operations
     const operations = [

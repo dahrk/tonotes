@@ -1,11 +1,11 @@
-module.exports = {
+export = {
   app: {
     getVersion: () => '1.0.0',
     getName: () => 'Sticky Notes',
-    getPath: name => `/mock/path/${name}`,
+    getPath: (name: string) => `/mock/path/${name}`,
     quit: jest.fn(),
     on: jest.fn(),
-    whenReady: jest.fn().mockResolvedValue(),
+    whenReady: jest.fn().mockResolvedValue(undefined),
     dock: {
       hide: jest.fn(),
       show: jest.fn(),

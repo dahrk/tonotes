@@ -11,8 +11,23 @@ import userEvent from '@testing-library/user-event';
 import App from '../../src/renderer/App';
 import { createMockNote } from '../utils/testHelpers';
 
+// Types for electron API
+interface ElectronAPI {
+  getNote: jest.MockedFunction<any>;
+  updateNote: jest.MockedFunction<any>;
+  deleteNote: jest.MockedFunction<any>;
+  createNote: jest.MockedFunction<any>;
+  getAllNotes: jest.MockedFunction<any>;
+  getNoteTags: jest.MockedFunction<any>;
+  getAllTags: jest.MockedFunction<any>;
+  createTag: jest.MockedFunction<any>;
+  addTagToNote: jest.MockedFunction<any>;
+  removeTagFromNote: jest.MockedFunction<any>;
+  focusNote: jest.MockedFunction<any>;
+}
+
 // Mock electron API
-const mockElectronAPI = {
+const mockElectronAPI: ElectronAPI = {
   getNote: jest.fn(),
   updateNote: jest.fn(),
   deleteNote: jest.fn(),
@@ -26,11 +41,11 @@ const mockElectronAPI = {
   focusNote: jest.fn(),
 };
 
-global.window.electronAPI = mockElectronAPI;
+(global as any).window.electronAPI = mockElectronAPI;
 
 // Mock styles
 jest.mock('../../src/utils/styles', () => ({
-  cn: (...classes) => classes.filter(Boolean).join(' '),
+  cn: (...classes: (string | undefined | false)[]) => classes.filter(Boolean).join(' '),
   layoutStyles: {
     centerContent: 'center-content',
     macOSHeaderSpacing: 'macos-spacing',

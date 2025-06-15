@@ -36,9 +36,23 @@ jest.mock('electron', () => ({
   },
 }));
 
+interface MockWindow {
+  loadURL: jest.MockedFunction<any>;
+  on: jest.MockedFunction<any>;
+  focus: jest.MockedFunction<any>;
+  show: jest.MockedFunction<any>;
+  isDestroyed: jest.MockedFunction<any>;
+  webContents: {
+    send: jest.MockedFunction<any>;
+    executeJavaScript: jest.MockedFunction<any>;
+  };
+  close?: jest.MockedFunction<any>;
+  destroy?: jest.MockedFunction<any>;
+}
+
 describe('Settings Persistence', () => {
-  let settingsWindow;
-  let mockWindow;
+  let settingsWindow: SettingsWindow;
+  let mockWindow: MockWindow;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -54,7 +68,7 @@ describe('Settings Persistence', () => {
         executeJavaScript: jest.fn(),
       },
     };
-    BrowserWindow.mockImplementation(() => mockWindow);
+    (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mockImplementation(() => mockWindow as any);
 
     settingsWindow = new SettingsWindow();
   });
@@ -108,7 +122,7 @@ describe('Settings Persistence', () => {
 
     it('saves and restores theme preference', () => {
       // Test each theme option
-      const themes = ['light', 'dark', 'system'];
+      const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
 
       themes.forEach(theme => {
         settingsWindow.updateSettings({ theme });
@@ -143,7 +157,7 @@ describe('Settings Persistence', () => {
     it('updates multiple settings atomically', () => {
       const newSettings = {
         alwaysOnTop: false,
-        theme: 'dark',
+        theme: 'dark' as const,
         autoSaveInterval: 60000,
         launchOnStartup: true,
       };
@@ -184,7 +198,7 @@ describe('Settings Persistence', () => {
       const initialTheme = settingsWindow.getSettings().theme;
 
       // Try to set invalid theme
-      settingsWindow.updateSettings({ theme: 'invalid-theme' });
+      settingsWindow.updateSettings({ theme: 'invalid-theme' as any });
 
       // Theme should remain unchanged
       expect(settingsWindow.getSettings().theme).toBe(initialTheme);
@@ -194,7 +208,7 @@ describe('Settings Persistence', () => {
       const initialInterval = settingsWindow.getSettings().autoSaveInterval;
 
       // Try invalid intervals
-      const invalidIntervals = [-1000, 0, 'not-a-number', null];
+      const invalidIntervals = [-1000, 0, 'not-a-number' as any, null as any];
 
       invalidIntervals.forEach(interval => {
         settingsWindow.updateSettings({ autoSaveInterval: interval });
@@ -208,7 +222,7 @@ describe('Settings Persistence', () => {
       const initialSettings = settingsWindow.getSettings();
 
       // Try invalid boolean values
-      const invalidValues = ['true', 1, 0, null, undefined];
+      const invalidValues = ['true' as any, 1 as any, 0 as any, null as any, undefined as any];
 
       invalidValues.forEach(value => {
         settingsWindow.updateSettings({ alwaysOnTop: value });
@@ -235,7 +249,7 @@ describe('Settings Persistence', () => {
       expect(BrowserWindow).toHaveBeenCalled();
 
       // Verify window options
-      const windowOptions = BrowserWindow.mock.calls[0][0];
+      const windowOptions = (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mock.calls[0][0];
       expect(windowOptions.width).toBe(450);
       expect(windowOptions.height).toBe(350);
 
@@ -331,7 +345,7 @@ describe('Settings Persistence', () => {
       // Update settings
       const customSettings = {
         alwaysOnTop: false,
-        theme: 'dark',
+        theme: 'dark' as const,
         autoSaveInterval: 60000,
         launchOnStartup: true,
       };
@@ -342,7 +356,7 @@ describe('Settings Persistence', () => {
 
       // Simulate window close
       const closeHandler = mockWindow.on.mock.calls.find(
-        call => call[0] === 'closed'
+        (call: any[]) => call[0] === 'closed'
       )?.[1];
       if (closeHandler) {
         closeHandler();
@@ -395,7 +409,7 @@ describe('Settings Persistence', () => {
 
       // Find the 'closed' event handler
       const closedHandler = mockWindow.on.mock.calls.find(
-        call => call[0] === 'closed'
+        (call: any[]) => call[0] === 'closed'
       )?.[1];
 
       expect(closedHandler).toBeTruthy();
@@ -410,6 +424,9 @@ describe('Settings Persistence', () => {
     });
 
     it('properly destroys window on app shutdown', () => {
+      mockWindow.close = jest.fn();
+      mockWindow.destroy = jest.fn();
+      
       settingsWindow.show();
 
       // Call destroy method

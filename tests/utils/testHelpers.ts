@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, RenderOptions } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ReactElement } from 'react';
 
 /**
  * Test Helpers for Sticky Notes App
@@ -8,9 +9,41 @@ import userEvent from '@testing-library/user-event';
  */
 
 /**
+ * Note interface for mock data
+ */
+interface MockNote {
+  id: string;
+  content: string;
+  color: 'yellow' | 'pink' | 'blue';
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Tiptap editor mock interface
+ */
+interface MockEditor {
+  getHTML: jest.MockedFunction<() => string>;
+  getJSON: jest.MockedFunction<() => any>;
+  setContent: jest.MockedFunction<(content: any) => void>;
+  destroy: jest.MockedFunction<() => void>;
+  isDestroyed: boolean;
+  commands: {
+    setContent: jest.MockedFunction<(content: any) => void>;
+    focus: jest.MockedFunction<() => void>;
+  };
+  on: jest.MockedFunction<(event: string, callback: () => void) => void>;
+  off: jest.MockedFunction<(event: string, callback: () => void) => void>;
+}
+
+/**
  * Creates a mock note object with default values
  */
-export function createMockNote(overrides = {}) {
+export function createMockNote(overrides: Partial<MockNote> = {}): MockNote {
   return {
     id: 'test-note-id',
     content: '# Test Note\n\nThis is a test note',
@@ -28,7 +61,7 @@ export function createMockNote(overrides = {}) {
 /**
  * Creates a mock Tiptap editor instance
  */
-export function createMockEditor() {
+export function createMockEditor(): MockEditor {
   return {
     getHTML: jest.fn(() => '<p>Mock HTML content</p>'),
     getJSON: jest.fn(() => ({ type: 'doc', content: [] })),
@@ -47,7 +80,10 @@ export function createMockEditor() {
 /**
  * Wrapper for rendering components with common providers
  */
-export function renderWithProviders(ui, options = {}) {
+export function renderWithProviders(
+  ui: ReactElement,
+  options: RenderOptions = {}
+) {
   return render(ui, {
     // Add any providers here if needed
     ...options,
@@ -57,7 +93,7 @@ export function renderWithProviders(ui, options = {}) {
 /**
  * Waits for markdown conversion to complete
  */
-export async function waitForMarkdownRender() {
+export async function waitForMarkdownRender(): Promise<void> {
   // Wait for any async markdown processing
   await waitFor(() => {
     // Check if markdown has been processed
@@ -68,7 +104,7 @@ export async function waitForMarkdownRender() {
 /**
  * Simulates typing in a Tiptap editor
  */
-export async function typeInEditor(content) {
+export async function typeInEditor(content: string): Promise<void> {
   const user = userEvent.setup();
   const editor = screen.getByRole('textbox', { name: /editor/i });
   await user.clear(editor);

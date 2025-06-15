@@ -5,24 +5,24 @@ import '@testing-library/jest-dom';
 // No external library needed - Jest handles all mocking
 
 // Create global electron mock
-global.electron = {};
-global.electron.app = {
+(global as any).electron = {};
+(global as any).electron.app = {
   getVersion: () => '1.0.0',
   getName: () => 'Sticky Notes',
-  getPath: name => `/mock/path/${name}`,
+  getPath: (name: string) => `/mock/path/${name}`,
   quit: jest.fn(),
   on: jest.fn(),
-  whenReady: jest.fn().mockResolvedValue(),
+  whenReady: jest.fn().mockResolvedValue(undefined),
 };
 
-global.electron.ipcRenderer = {
+(global as any).electron.ipcRenderer = {
   invoke: jest.fn(),
   on: jest.fn(),
   off: jest.fn(),
   send: jest.fn(),
 };
 
-global.electron.ipcMain = {
+(global as any).electron.ipcMain = {
   handle: jest.fn(),
   on: jest.fn(),
   off: jest.fn(),
@@ -60,14 +60,14 @@ Object.defineProperty(global, 'window', {
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
+(global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+(global as any).IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
@@ -75,7 +75,7 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 
 // Suppress console warnings in tests
 const originalWarn = console.warn;
-console.warn = (...args) => {
+console.warn = (...args: any[]) => {
   if (args[0] && args[0].includes('componentWillReceiveProps')) {
     return;
   }

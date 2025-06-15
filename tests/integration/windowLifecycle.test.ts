@@ -5,15 +5,66 @@
  * theme application, and cleanup across the entire system.
  */
 
-import { BrowserWindow, app, ipcMain } from 'electron';
+import { BrowserWindow, app, ipcMain, nativeTheme } from 'electron';
 import { PostItApp } from '../../src/main/main';
 import { Database } from '../../src/database/database';
 import { SystemTray } from '../../src/main/system-tray';
 import { createMockNote } from '../utils/testHelpers';
 
+// Types for mocked objects
+interface MockWindow {
+  loadFile: jest.MockedFunction<any>;
+  loadURL: jest.MockedFunction<any>;
+  on: jest.MockedFunction<any>;
+  once: jest.MockedFunction<any>;
+  show: jest.MockedFunction<any>;
+  hide: jest.MockedFunction<any>;
+  close: jest.MockedFunction<any>;
+  minimize: jest.MockedFunction<any>;
+  focus: jest.MockedFunction<any>;
+  setAlwaysOnTop: jest.MockedFunction<any>;
+  setVisibleOnAllWorkspaces: jest.MockedFunction<any>;
+  getPosition: jest.MockedFunction<any>;
+  getSize: jest.MockedFunction<any>;
+  isDestroyed: jest.MockedFunction<any>;
+  webContents: {
+    send: jest.MockedFunction<any>;
+    on: jest.MockedFunction<any>;
+    executeJavaScript: jest.MockedFunction<any>;
+    openDevTools: jest.MockedFunction<any>;
+  };
+}
+
+interface MockDatabase {
+  initialize: jest.MockedFunction<any>;
+  getAllNotes: jest.MockedFunction<any>;
+  createNote: jest.MockedFunction<any>;
+  updateNote: jest.MockedFunction<any>;
+  deleteNote: jest.MockedFunction<any>;
+  getNote: jest.MockedFunction<any>;
+  searchNotes: jest.MockedFunction<any>;
+  createTag: jest.MockedFunction<any>;
+  addTagToNote: jest.MockedFunction<any>;
+  removeTagFromNote: jest.MockedFunction<any>;
+  getNoteTags: jest.MockedFunction<any>;
+  getAllTags: jest.MockedFunction<any>;
+}
+
+interface MockSystemTray {
+  updateTrayTitle: jest.MockedFunction<any>;
+  updateTrayMenu: jest.MockedFunction<any>;
+  destroy: jest.MockedFunction<any>;
+  onCreateNote?: () => string;
+  onShowSearch?: () => void;
+  onShowSettings?: () => void;
+  onGetAllNotes?: () => any[];
+  onFocusNote?: (noteId: string) => boolean;
+  onCheckWindowExists?: (noteId: string) => boolean;
+}
+
 // Mock all electron modules comprehensively
 jest.mock('electron', () => {
-  const mockWindow = {
+  const mockWindow: MockWindow = {
     loadFile: jest.fn(),
     loadURL: jest.fn(),
     on: jest.fn(),
@@ -31,7 +82,7 @@ jest.mock('electron', () => {
     webContents: {
       send: jest.fn(),
       on: jest.fn(),
-      executeJavaScript: jest.fn().mockResolvedValue(),
+      executeJavaScript: jest.fn().mockResolvedValue(undefined),
       openDevTools: jest.fn(),
     },
   };
@@ -39,7 +90,7 @@ jest.mock('electron', () => {
   return {
     BrowserWindow: jest.fn(() => mockWindow),
     app: {
-      whenReady: jest.fn().mockResolvedValue(),
+      whenReady: jest.fn().mockResolvedValue(undefined),
       on: jest.fn(),
       commandLine: {
         appendSwitch: jest.fn(),
@@ -94,16 +145,16 @@ jest.mock('../../src/database/database');
 jest.mock('../../src/main/system-tray');
 
 describe('Window Lifecycle Integration', () => {
-  let mockDatabase;
-  let mockSystemTray;
-  let postItApp;
+  let mockDatabase: MockDatabase;
+  let mockSystemTray: MockSystemTray;
+  let postItApp: PostItApp;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Setup comprehensive database mock
     mockDatabase = {
-      initialize: jest.fn().mockResolvedValue(),
+      initialize: jest.fn().mockResolvedValue(undefined),
       getAllNotes: jest.fn(() => []),
       createNote: jest.fn(),
       updateNote: jest.fn(),
@@ -116,7 +167,7 @@ describe('Window Lifecycle Integration', () => {
       getNoteTags: jest.fn(() => []),
       getAllTags: jest.fn(() => []),
     };
-    Database.mockImplementation(() => mockDatabase);
+    (Database as jest.MockedClass<typeof Database>).mockImplementation(() => mockDatabase as any);
 
     // Setup system tray mock
     mockSystemTray = {
@@ -124,11 +175,11 @@ describe('Window Lifecycle Integration', () => {
       updateTrayMenu: jest.fn(),
       destroy: jest.fn(),
     };
-    SystemTray.mockImplementation(() => mockSystemTray);
+    (SystemTray as jest.MockedClass<typeof SystemTray>).mockImplementation(() => mockSystemTray as any);
 
     // Reset BrowserWindow static methods
-    BrowserWindow.getAllWindows = jest.fn(() => []);
-    BrowserWindow.fromWebContents = jest.fn(() => null);
+    (BrowserWindow as any).getAllWindows = jest.fn(() => []);
+    (BrowserWindow as any).fromWebContents = jest.fn(() => null);
   });
 
   /**
@@ -146,8 +197,11 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready event
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Verify database was initialized
     expect(mockDatabase.initialize).toHaveBeenCalled();
@@ -172,8 +226,11 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready event
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Verify a new note was created
     expect(mockDatabase.createNote).toHaveBeenCalled();
@@ -224,12 +281,16 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Find the create-note IPC handler
-    const createNoteHandler = ipcMain.handle.mock.calls.find(
-      call => call[0] === 'create-note'
+    const ipcMainMock = ipcMain as any;
+    const createNoteHandler = ipcMainMock.handle.mock.calls.find(
+      (call: any[]) => call[0] === 'create-note'
     )?.[1];
 
     expect(createNoteHandler).toBeTruthy();
@@ -272,18 +333,23 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Find the delete-note IPC handler
-    const deleteNoteHandler = ipcMain.handle.mock.calls.find(
-      call => call[0] === 'delete-note'
+    const ipcMainMock = ipcMain as any;
+    const deleteNoteHandler = ipcMainMock.handle.mock.calls.find(
+      (call: any[]) => call[0] === 'delete-note'
     )?.[1];
 
     expect(deleteNoteHandler).toBeTruthy();
 
     // Get the window that was created for the note
-    const windowInstance = BrowserWindow.mock.results[0].value;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstance = browserWindowMock.mock.results[0]?.value as MockWindow;
 
     // Simulate IPC call to delete note
     const mockEvent = { sender: { id: 1 } };
@@ -312,21 +378,25 @@ describe('Window Lifecycle Integration', () => {
 
     // Mock settings window
     const mockSettings = { theme: 'dark', alwaysOnTop: true };
-    postItApp.settingsWindow = {
+    (postItApp as any).settingsWindow = {
       getSettings: jest.fn(() => mockSettings),
       updateSettings: jest.fn(),
       applyTheme: jest.fn(),
     };
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Trigger theme change
     postItApp.handleSettingsChange({ theme: 'light', alwaysOnTop: false });
 
     // Verify theme was applied to all windows
-    const windows = BrowserWindow.mock.results.map(result => result.value);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
     windows.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("setAttribute('data-theme', 'light')")
@@ -345,11 +415,15 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Mock window as destroyed
-    const windowInstance = BrowserWindow.mock.results[0]?.value;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windowInstance = browserWindowMock.mock.results[0]?.value as MockWindow;
     if (windowInstance) {
       windowInstance.isDestroyed.mockReturnValue(true);
     }
@@ -370,28 +444,34 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Create some notes
     postItApp.createNote();
     postItApp.createNote();
 
     // Find the before-quit handler
-    const beforeQuitHandler = app.on.mock.calls.find(
-      call => call[0] === 'before-quit'
+    const beforeQuitHandler = appMock.on.mock.calls.find(
+      (call: any[]) => call[0] === 'before-quit'
     )?.[1];
 
     expect(beforeQuitHandler).toBeTruthy();
 
     // Simulate app quit
-    beforeQuitHandler();
+    if (beforeQuitHandler) {
+      beforeQuitHandler();
+    }
 
     // Verify system tray was destroyed
     expect(mockSystemTray.destroy).toHaveBeenCalled();
 
     // Verify all windows were closed
-    const windows = BrowserWindow.mock.results.map(result => result.value);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
     windows.forEach(window => {
       expect(window.close).toHaveBeenCalled();
     });
@@ -404,8 +484,11 @@ describe('Window Lifecycle Integration', () => {
     postItApp = new PostItApp();
 
     // Simulate app ready
-    const readyCallback = app.whenReady.mock.calls[0][0];
-    await readyCallback();
+    const appMock = app as any;
+    const readyCallback = appMock.whenReady.mock.calls[0]?.[0];
+    if (readyCallback) {
+      await readyCallback();
+    }
 
     // Verify system tray was initialized with correct callbacks
     expect(SystemTray).toHaveBeenCalledWith(
@@ -418,24 +501,25 @@ describe('Window Lifecycle Integration', () => {
     );
 
     // Test create note callback
-    const [onCreateNote] = SystemTray.mock.calls[0];
+    const systemTrayMock = SystemTray as jest.MockedClass<typeof SystemTray>;
+    const [onCreateNote] = systemTrayMock.mock.calls[0];
     const noteId = onCreateNote();
     expect(noteId).toBeTruthy();
     expect(mockDatabase.createNote).toHaveBeenCalled();
 
     // Test get all notes callback
-    const [, , , onGetAllNotes] = SystemTray.mock.calls[0];
+    const [, , , onGetAllNotes] = systemTrayMock.mock.calls[0];
     const notes = onGetAllNotes();
     expect(mockDatabase.getAllNotes).toHaveBeenCalled();
 
     // Test focus note callback
-    const [, , , , onFocusNote] = SystemTray.mock.calls[0];
+    const [, , , , onFocusNote] = systemTrayMock.mock.calls[0];
     mockDatabase.getNote.mockReturnValue(createMockNote({ id: 'test' }));
     const focused = onFocusNote('test');
     expect(focused).toBe(true);
 
     // Test check window exists callback
-    const [, , , , , onCheckWindowExists] = SystemTray.mock.calls[0];
+    const [, , , , , onCheckWindowExists] = systemTrayMock.mock.calls[0];
     const exists = onCheckWindowExists(noteId);
     expect(exists).toBe(true);
   });

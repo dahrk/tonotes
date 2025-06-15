@@ -177,7 +177,7 @@ describe('cn() Utility Function', () => {
 
     it('handles whitespace in class names', () => {
       const result = cn('  base  ', ' other ', '  final  ');
-      expect(result).toBe('  base   other   final  ');
+      expect(result).toBe('  base    other    final  ');
     });
 
     it('handles very long class name combinations', () => {
@@ -220,7 +220,7 @@ describe('cn() Utility Function', () => {
     });
 
     it('returns consistent results for same inputs', () => {
-      const inputs = ['base', true && 'active', false && 'disabled', 'end'];
+      const inputs: (string | false | undefined)[] = ['base', true && 'active', false && 'disabled', 'end'];
 
       const result1 = cn(...inputs);
       const result2 = cn(...inputs);

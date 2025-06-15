@@ -116,6 +116,8 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.29",
+    "@types/testing-library__jest-dom": "^6.0.0",
+    "@types/testing-library__user-event": "^4.2.0",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
     "@vitejs/plugin-react": "^4.5.1",

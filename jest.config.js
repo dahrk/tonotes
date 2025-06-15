@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   
   // Module paths
   roots: ['<rootDir>/src', '<rootDir>/tests'],
@@ -29,10 +29,10 @@ module.exports = {
     }],
   },
   
-  // Module name mapping
-  moduleNameMapping: {
+  // Module name mapping (CORRECTED)
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^electron$': '<rootDir>/tests/__mocks__/electron.js',
+    '^electron$': '<rootDir>/tests/__mocks__/electron.ts',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   
@@ -80,10 +80,6 @@ module.exports = {
   // Verbose output
   verbose: true,
   
-  // Add Jest globals
-  globals: {
-    'ts-jest': {
-      useESM: false,
-    },
-  },
+  // Disable the deprecated globals warning
+  preset: 'ts-jest/presets/default',
 };
