@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 /**
  * Test Helpers for Sticky Notes App
- * 
+ *
  * Utilities to make testing more consistent and reduce boilerplate
  */
 
@@ -81,7 +81,9 @@ export async function typeInEditor(content) {
 export const markdownTestData = {
   bulletList: '• First bullet\n• Second bullet\n• Third bullet',
   numberedList: '1. First item\n2. Second item\n3. Third item',
-  nestedTodos: '- [ ] Parent task\n  - [ ] Child task\n    - [ ] Grandchild task',
-  mixedContent: '# Header\n\nSome **bold** text and *italic* text.\n\n- [ ] Todo item\n- [x] Completed item\n\n```\ncode block\n```',
+  nestedTodos:
+    '- [ ] Parent task\n  - [ ] Child task\n    - [ ] Grandchild task',
+  mixedContent:
+    '# Header\n\nSome **bold** text and *italic* text.\n\n- [ ] Todo item\n- [x] Completed item\n\n```\ncode block\n```',
   headers: '# H1\n## H2\n### H3\n#### H4',
 };

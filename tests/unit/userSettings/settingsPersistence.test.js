@@ -1,6 +1,6 @@
 /**
  * Test Suite: User Settings Persistence
- * 
+ *
  * Verifies that user preferences are saved and applied correctly
  * across app restarts and that settings changes propagate properly.
  */
@@ -42,7 +42,7 @@ describe('Settings Persistence', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockWindow = {
       loadURL: jest.fn(),
       on: jest.fn(),
@@ -55,7 +55,7 @@ describe('Settings Persistence', () => {
       },
     };
     BrowserWindow.mockImplementation(() => mockWindow);
-    
+
     settingsWindow = new SettingsWindow();
   });
 
@@ -65,7 +65,7 @@ describe('Settings Persistence', () => {
   describe('Default Settings', () => {
     it('initializes with correct default settings', () => {
       const settings = settingsWindow.getSettings();
-      
+
       expect(settings).toEqual({
         launchOnStartup: false,
         theme: 'system',
@@ -76,13 +76,13 @@ describe('Settings Persistence', () => {
 
     it('validates settings values on initialization', () => {
       const settings = settingsWindow.getSettings();
-      
+
       // Validate types
       expect(typeof settings.launchOnStartup).toBe('boolean');
       expect(typeof settings.theme).toBe('string');
       expect(typeof settings.autoSaveInterval).toBe('number');
       expect(typeof settings.alwaysOnTop).toBe('boolean');
-      
+
       // Validate ranges
       expect(settings.autoSaveInterval).toBeGreaterThan(0);
       expect(['system', 'light', 'dark']).toContain(settings.theme);
@@ -96,11 +96,11 @@ describe('Settings Persistence', () => {
     it('saves and restores always-on-top preference', () => {
       // Update always-on-top setting
       settingsWindow.updateSettings({ alwaysOnTop: false });
-      
+
       // Verify setting was updated
       const settings = settingsWindow.getSettings();
       expect(settings.alwaysOnTop).toBe(false);
-      
+
       // Update back to true
       settingsWindow.updateSettings({ alwaysOnTop: true });
       expect(settingsWindow.getSettings().alwaysOnTop).toBe(true);
@@ -109,7 +109,7 @@ describe('Settings Persistence', () => {
     it('saves and restores theme preference', () => {
       // Test each theme option
       const themes = ['light', 'dark', 'system'];
-      
+
       themes.forEach(theme => {
         settingsWindow.updateSettings({ theme });
         expect(settingsWindow.getSettings().theme).toBe(theme);
@@ -119,7 +119,7 @@ describe('Settings Persistence', () => {
     it('saves and restores auto-save interval', () => {
       // Test different intervals
       const intervals = [10000, 30000, 60000, 120000];
-      
+
       intervals.forEach(interval => {
         settingsWindow.updateSettings({ autoSaveInterval: interval });
         expect(settingsWindow.getSettings().autoSaveInterval).toBe(interval);
@@ -130,7 +130,7 @@ describe('Settings Persistence', () => {
       // Test startup setting
       settingsWindow.updateSettings({ launchOnStartup: true });
       expect(settingsWindow.getSettings().launchOnStartup).toBe(true);
-      
+
       settingsWindow.updateSettings({ launchOnStartup: false });
       expect(settingsWindow.getSettings().launchOnStartup).toBe(false);
     });
@@ -147,9 +147,9 @@ describe('Settings Persistence', () => {
         autoSaveInterval: 60000,
         launchOnStartup: true,
       };
-      
+
       settingsWindow.updateSettings(newSettings);
-      
+
       const savedSettings = settingsWindow.getSettings();
       expect(savedSettings.alwaysOnTop).toBe(false);
       expect(savedSettings.theme).toBe('dark');
@@ -163,12 +163,12 @@ describe('Settings Persistence', () => {
         alwaysOnTop: false,
         theme: 'dark',
       });
-      
+
       // Partially update
       settingsWindow.updateSettings({
         theme: 'light',
       });
-      
+
       const settings = settingsWindow.getSettings();
       expect(settings.theme).toBe('light');
       expect(settings.alwaysOnTop).toBe(false); // Should remain unchanged
@@ -182,38 +182,44 @@ describe('Settings Persistence', () => {
   describe('Settings Validation', () => {
     it('rejects invalid theme values', () => {
       const initialTheme = settingsWindow.getSettings().theme;
-      
+
       // Try to set invalid theme
       settingsWindow.updateSettings({ theme: 'invalid-theme' });
-      
+
       // Theme should remain unchanged
       expect(settingsWindow.getSettings().theme).toBe(initialTheme);
     });
 
     it('rejects invalid auto-save intervals', () => {
       const initialInterval = settingsWindow.getSettings().autoSaveInterval;
-      
+
       // Try invalid intervals
       const invalidIntervals = [-1000, 0, 'not-a-number', null];
-      
+
       invalidIntervals.forEach(interval => {
         settingsWindow.updateSettings({ autoSaveInterval: interval });
-        expect(settingsWindow.getSettings().autoSaveInterval).toBe(initialInterval);
+        expect(settingsWindow.getSettings().autoSaveInterval).toBe(
+          initialInterval
+        );
       });
     });
 
     it('rejects non-boolean values for boolean settings', () => {
       const initialSettings = settingsWindow.getSettings();
-      
+
       // Try invalid boolean values
       const invalidValues = ['true', 1, 0, null, undefined];
-      
+
       invalidValues.forEach(value => {
         settingsWindow.updateSettings({ alwaysOnTop: value });
-        expect(settingsWindow.getSettings().alwaysOnTop).toBe(initialSettings.alwaysOnTop);
-        
+        expect(settingsWindow.getSettings().alwaysOnTop).toBe(
+          initialSettings.alwaysOnTop
+        );
+
         settingsWindow.updateSettings({ launchOnStartup: value });
-        expect(settingsWindow.getSettings().launchOnStartup).toBe(initialSettings.launchOnStartup);
+        expect(settingsWindow.getSettings().launchOnStartup).toBe(
+          initialSettings.launchOnStartup
+        );
       });
     });
   });
@@ -224,21 +230,21 @@ describe('Settings Persistence', () => {
   describe('Window Position Management', () => {
     it('creates settings window at center of screen', () => {
       settingsWindow.show();
-      
+
       // Verify window was created
       expect(BrowserWindow).toHaveBeenCalled();
-      
+
       // Verify window options
       const windowOptions = BrowserWindow.mock.calls[0][0];
       expect(windowOptions.width).toBe(450);
       expect(windowOptions.height).toBe(350);
-      
+
       // Verify centered position calculation
       const screenWidth = 1920;
       const screenHeight = 1080;
       const expectedX = Math.floor((screenWidth - 450) / 2);
       const expectedY = Math.floor((screenHeight - 350) / 2);
-      
+
       expect(windowOptions.x).toBe(expectedX);
       expect(windowOptions.y).toBe(expectedY);
     });
@@ -247,13 +253,13 @@ describe('Settings Persistence', () => {
       // Show window first time
       settingsWindow.show();
       expect(BrowserWindow).toHaveBeenCalledTimes(1);
-      
+
       // Show window second time
       settingsWindow.show();
-      
+
       // Should not create new window
       expect(BrowserWindow).toHaveBeenCalledTimes(1);
-      
+
       // Should focus existing window
       expect(mockWindow.focus).toHaveBeenCalled();
       expect(mockWindow.show).toHaveBeenCalled();
@@ -263,13 +269,13 @@ describe('Settings Persistence', () => {
       // Show window first time
       settingsWindow.show();
       expect(BrowserWindow).toHaveBeenCalledTimes(1);
-      
+
       // Mock window as destroyed
       mockWindow.isDestroyed.mockReturnValue(true);
-      
+
       // Show window again
       settingsWindow.show();
-      
+
       // Should create new window
       expect(BrowserWindow).toHaveBeenCalledTimes(2);
     });
@@ -281,13 +287,13 @@ describe('Settings Persistence', () => {
   describe('Theme Application', () => {
     it('applies theme to settings window', () => {
       settingsWindow.show();
-      
+
       // Apply light theme
       settingsWindow.applyTheme('light');
       expect(mockWindow.webContents.executeJavaScript).toHaveBeenCalledWith(
         "document.documentElement.setAttribute('data-theme', 'light');"
       );
-      
+
       // Apply dark theme
       settingsWindow.applyTheme('dark');
       expect(mockWindow.webContents.executeJavaScript).toHaveBeenCalledWith(
@@ -298,20 +304,20 @@ describe('Settings Persistence', () => {
     it('handles theme application when window does not exist', () => {
       // Don't create window, just try to apply theme
       settingsWindow.applyTheme('dark');
-      
+
       // Should not crash and no calls should be made
       expect(mockWindow.webContents.executeJavaScript).not.toHaveBeenCalled();
     });
 
     it('handles theme application when window is destroyed', () => {
       settingsWindow.show();
-      
+
       // Mock window as destroyed
       mockWindow.isDestroyed.mockReturnValue(true);
-      
+
       // Try to apply theme
       settingsWindow.applyTheme('dark');
-      
+
       // Should not crash and no calls should be made to destroyed window
       expect(mockWindow.webContents.executeJavaScript).not.toHaveBeenCalled();
     });
@@ -330,10 +336,10 @@ describe('Settings Persistence', () => {
         launchOnStartup: true,
       };
       settingsWindow.updateSettings(customSettings);
-      
+
       // Show window first time
       settingsWindow.show();
-      
+
       // Simulate window close
       const closeHandler = mockWindow.on.mock.calls.find(
         call => call[0] === 'closed'
@@ -341,13 +347,13 @@ describe('Settings Persistence', () => {
       if (closeHandler) {
         closeHandler();
       }
-      
+
       // Mock window as destroyed
       mockWindow.isDestroyed.mockReturnValue(true);
-      
+
       // Show window again (should recreate)
       settingsWindow.show();
-      
+
       // Settings should still be preserved
       const preservedSettings = settingsWindow.getSettings();
       expect(preservedSettings.alwaysOnTop).toBe(false);
@@ -363,15 +369,17 @@ describe('Settings Persistence', () => {
   describe('Settings UI Generation', () => {
     it('generates valid HTML for settings interface', () => {
       settingsWindow.show();
-      
+
       // Verify loadURL was called with HTML content
       expect(mockWindow.loadURL).toHaveBeenCalled();
-      
+
       const loadURLCall = mockWindow.loadURL.mock.calls[0][0];
       expect(loadURLCall).toMatch(/^data:text\/html;charset=utf-8,/);
-      
+
       // Decode and check HTML content
-      const htmlContent = decodeURIComponent(loadURLCall.replace('data:text/html;charset=utf-8,', ''));
+      const htmlContent = decodeURIComponent(
+        loadURLCall.replace('data:text/html;charset=utf-8,', '')
+      );
       expect(htmlContent).toContain('<!DOCTYPE html>');
       expect(htmlContent).toContain('<title>Settings</title>');
       expect(htmlContent).toContain('data-theme');
@@ -384,17 +392,17 @@ describe('Settings Persistence', () => {
   describe('Window Cleanup', () => {
     it('cleans up window reference on close', () => {
       settingsWindow.show();
-      
+
       // Find the 'closed' event handler
       const closedHandler = mockWindow.on.mock.calls.find(
         call => call[0] === 'closed'
       )?.[1];
-      
+
       expect(closedHandler).toBeTruthy();
-      
+
       // Simulate window close
       closedHandler();
-      
+
       // Window reference should be cleaned up
       // We can test this by showing again and verifying new window is created
       settingsWindow.show();
@@ -403,10 +411,10 @@ describe('Settings Persistence', () => {
 
     it('properly destroys window on app shutdown', () => {
       settingsWindow.show();
-      
+
       // Call destroy method
       settingsWindow.destroy();
-      
+
       // Window should be closed if it exists
       expect(mockWindow.close || mockWindow.destroy).toHaveBeenCalled();
     });

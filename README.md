@@ -101,7 +101,7 @@ A production-ready macOS desktop application for creating persistent sticky note
 - `npm run test:coverage`: Generate detailed coverage report (80%+ target)
 - `npm run test:ci`: Run tests in CI/CD mode with coverage enforcement
 
-**Testing Strategy**: The application maintains 80%+ test coverage with comprehensive unit, integration, and E2E tests covering critical user workflows including markdown preservation, window management, and settings persistence. See [Testing Guide](docs/TESTING.md) for detailed information.
+**Testing Strategy**: The application maintains 80%+ test coverage with comprehensive unit, integration, and E2E tests covering critical user workflows including markdown preservation, window management, and settings persistence. Uses Jest's built-in mocking for Electron APIs without external dependencies. See [Testing Guide](docs/TESTING.md) for detailed information.
 
 ## User Guide
 

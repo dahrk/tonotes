@@ -1,6 +1,6 @@
 /**
  * Integration Test: Window Lifecycle Management
- * 
+ *
  * Tests the complete window lifecycle including creation, management,
  * theme application, and cleanup across the entire system.
  */
@@ -414,7 +414,7 @@ describe('Window Lifecycle Integration', () => {
       expect.any(Function), // onShowSettings
       expect.any(Function), // onGetAllNotes
       expect.any(Function), // onFocusNote
-      expect.any(Function)  // onCheckWindowExists
+      expect.any(Function) // onCheckWindowExists
     );
 
     // Test create note callback

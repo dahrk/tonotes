@@ -1,6 +1,6 @@
 /**
  * E2E Test: Complete Note Creation Flow
- * 
+ *
  * Simulates real user interaction from app start to note creation,
  * editing, saving, and reopening. Tests the complete user journey
  * to ensure everything works together seamlessly.
@@ -63,7 +63,7 @@ describe('E2E: Note Creation Flow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mock responses
     mockElectronAPI.getNote.mockResolvedValue(mockNote);
     mockElectronAPI.getNoteTags.mockResolvedValue([]);
@@ -186,10 +186,10 @@ function createNote() {
 
     // Click the link (would be handled by Tiptap's link handler)
     // This would trigger focusNote in real usage
-    
+
     // Step 5: Test note deletion flow
     const deleteButton = screen.getByTitle('Delete note');
-    
+
     // Mock window.confirm
     const originalConfirm = window.confirm;
     window.confirm = jest.fn(() => true);
@@ -236,7 +236,10 @@ function createNote() {
     const removeButton = screen.getByTitle('Remove tag');
     await user.click(removeButton);
 
-    expect(mockElectronAPI.removeTagFromNote).toHaveBeenCalledWith('test-note-123', 1);
+    expect(mockElectronAPI.removeTagFromNote).toHaveBeenCalledWith(
+      'test-note-123',
+      1
+    );
 
     // Add new tag
     const addTagButton = screen.getByTitle('Add tag');
@@ -305,7 +308,7 @@ function createNote() {
     const modeToggle = screen.queryByTitle(/toggle.*mode/i);
     if (modeToggle) {
       await user.click(modeToggle);
-      
+
       // Should still show the same content in different mode
       expect(screen.getByText(/Task 1/)).toBeInTheDocument();
       expect(screen.getByText(/Task 2/)).toBeInTheDocument();
@@ -362,7 +365,9 @@ function createNote() {
 
     // Should not crash the app
     expect(screen.getByRole('textbox')).toBeInTheDocument();
-    expect(editor).toHaveValue(expect.stringContaining('Content that will fail to save'));
+    expect(editor).toHaveValue(
+      expect.stringContaining('Content that will fail to save')
+    );
   });
 
   /**
@@ -426,11 +431,11 @@ function createNote() {
             content: [
               {
                 type: 'text',
-                text: 'Persistent content'
-              }
-            ]
-          }
-        ]
+                text: 'Persistent content',
+              },
+            ],
+          },
+        ],
       }),
     };
     mockElectronAPI.getNote.mockResolvedValue(savedNote);

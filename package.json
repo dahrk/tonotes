@@ -125,7 +125,6 @@
     "cross-env": "^7.0.3",
     "electron": "^36.4.0",
     "electron-builder": "^26.0.12",
-    "electron-mock-ipc": "^0.3.13",
     "electron-rebuild": "^3.2.9",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",

@@ -1,6 +1,6 @@
 /**
  * E2E Test: Multi-Window Management
- * 
+ *
  * Tests the complete multi-window experience including creating multiple notes,
  * managing them through the system tray, and coordinating between windows.
  */
@@ -15,7 +15,7 @@ import { createMockNote } from '../utils/testHelpers';
 jest.mock('electron', () => {
   const mockWindows = new Map();
   let windowIdCounter = 1;
-  
+
   const createMockWindow = () => {
     const windowId = windowIdCounter++;
     const mockWindow = {
@@ -133,15 +133,24 @@ describe('E2E: Multi-Window Management', () => {
       updateTrayMenu: jest.fn(),
       destroy: jest.fn(),
     };
-    SystemTray.mockImplementation((onCreateNote, onShowSearch, onShowSettings, onGetAllNotes, onFocusNote, onCheckWindowExists) => {
-      mockSystemTray.onCreateNote = onCreateNote;
-      mockSystemTray.onShowSearch = onShowSearch;
-      mockSystemTray.onShowSettings = onShowSettings;
-      mockSystemTray.onGetAllNotes = onGetAllNotes;
-      mockSystemTray.onFocusNote = onFocusNote;
-      mockSystemTray.onCheckWindowExists = onCheckWindowExists;
-      return mockSystemTray;
-    });
+    SystemTray.mockImplementation(
+      (
+        onCreateNote,
+        onShowSearch,
+        onShowSettings,
+        onGetAllNotes,
+        onFocusNote,
+        onCheckWindowExists
+      ) => {
+        mockSystemTray.onCreateNote = onCreateNote;
+        mockSystemTray.onShowSearch = onShowSearch;
+        mockSystemTray.onShowSettings = onShowSettings;
+        mockSystemTray.onGetAllNotes = onGetAllNotes;
+        mockSystemTray.onFocusNote = onFocusNote;
+        mockSystemTray.onCheckWindowExists = onCheckWindowExists;
+        return mockSystemTray;
+      }
+    );
 
     // Reset BrowserWindow static methods
     BrowserWindow.getAllWindows = jest.fn(() => []);
@@ -247,10 +256,11 @@ describe('E2E: Multi-Window Management', () => {
 
     // Create multiple notes and verify cascading positions
     const positions = [];
-    
+
     for (let i = 0; i < 5; i++) {
       const noteId = postItApp.createNote();
-      const windowCall = BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
+      const windowCall =
+        BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
       positions.push({ x: windowCall[0].x, y: windowCall[0].y });
     }
 
@@ -318,7 +328,9 @@ describe('E2E: Multi-Window Management', () => {
     postItApp.handleSettingsChange({ theme: 'dark', alwaysOnTop: false });
 
     // Verify theme was applied to all windows
-    const windowInstances = BrowserWindow.mock.results.map(result => result.value);
+    const windowInstances = BrowserWindow.mock.results.map(
+      result => result.value
+    );
     windowInstances.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("setAttribute('data-theme', 'dark')")
@@ -337,7 +349,7 @@ describe('E2E: Multi-Window Management', () => {
     const mockSettings = { alwaysOnTop: true, theme: 'system' };
     postItApp.settingsWindow = {
       getSettings: jest.fn(() => mockSettings),
-      updateSettings: jest.fn((newSettings) => {
+      updateSettings: jest.fn(newSettings => {
         Object.assign(mockSettings, newSettings);
       }),
     };
@@ -350,7 +362,9 @@ describe('E2E: Multi-Window Management', () => {
     postItApp.createNote();
 
     // Verify all windows have always-on-top
-    const windowInstances = BrowserWindow.mock.results.map(result => result.value);
+    const windowInstances = BrowserWindow.mock.results.map(
+      result => result.value
+    );
     windowInstances.forEach(window => {
       expect(window.setAlwaysOnTop).toHaveBeenCalledWith(true);
     });
@@ -374,7 +388,7 @@ describe('E2E: Multi-Window Management', () => {
       createMockNote({ id: 'note3' }),
     ];
     mockDatabase.getAllNotes.mockReturnValue(notes);
-    mockDatabase.getNote.mockImplementation(id => 
+    mockDatabase.getNote.mockImplementation(id =>
       notes.find(note => note.id === id)
     );
 
@@ -390,7 +404,9 @@ describe('E2E: Multi-Window Management', () => {
     expect(focused2).toBe(true);
 
     // Verify focus and show were called
-    const windowInstances = BrowserWindow.mock.results.map(result => result.value);
+    const windowInstances = BrowserWindow.mock.results.map(
+      result => result.value
+    );
     windowInstances.forEach(window => {
       expect(window.focus).toHaveBeenCalled();
       expect(window.show).toHaveBeenCalled();
@@ -427,7 +443,9 @@ describe('E2E: Multi-Window Management', () => {
     expect(mockSystemTray.destroy).toHaveBeenCalled();
 
     // Verify all windows were closed
-    const windowInstances = BrowserWindow.mock.results.map(result => result.value);
+    const windowInstances = BrowserWindow.mock.results.map(
+      result => result.value
+    );
     windowInstances.forEach(window => {
       expect(window.close).toHaveBeenCalled();
     });

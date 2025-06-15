@@ -49,7 +49,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
     // Legacy markdown content - convert to minimal HTML for backward compatibility
     if (!content.trim()) return '<p></p>';
-    
+
     // Simple markdown-to-HTML conversion for legacy data
     return content
       .split('\n')
@@ -256,16 +256,17 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     immediatelyRender: false,
   });
 
-
   // Update editor content when prop changes (standard Tiptap approach)
   useEffect(() => {
     if (editor && content !== lastContent && !isUpdating) {
       setIsUpdating(true);
-      
+
       // Use Tiptap's standard content setting
       const parsedContent = initializeContent(content);
-      editor.commands.setContent(parsedContent, false, { preserveWhitespace: 'full' });
-      
+      editor.commands.setContent(parsedContent, false, {
+        preserveWhitespace: 'full',
+      });
+
       setLastContent(content);
       setIsUpdating(false);
     }
@@ -276,17 +277,23 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
     if (editor && content && content.trim()) {
       // Use standard Tiptap content initialization
       const parsedContent = initializeContent(content);
-      editor.commands.setContent(parsedContent, false, { preserveWhitespace: 'full' });
+      editor.commands.setContent(parsedContent, false, {
+        preserveWhitespace: 'full',
+      });
       setLastContent(content);
-      
+
       // Trigger overflow check after content is rendered
       setTimeout(() => {
         if (contentRef.current) {
           const container = contentRef.current;
-          const hasVerticalOverflow = container.scrollHeight > container.clientHeight;
-          const isAtBottom = Math.abs(
-            container.scrollHeight - container.clientHeight - container.scrollTop
-          ) < 5;
+          const hasVerticalOverflow =
+            container.scrollHeight > container.clientHeight;
+          const isAtBottom =
+            Math.abs(
+              container.scrollHeight -
+                container.clientHeight -
+                container.scrollTop
+            ) < 5;
           setHasOverflow(hasVerticalOverflow);
           setIsScrolledToBottom(isAtBottom);
         }

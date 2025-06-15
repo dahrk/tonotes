@@ -130,7 +130,7 @@ src/
 #### Comprehensive Testing Framework
 Implemented a robust testing strategy with 80%+ code coverage requirement:
 
-- **Testing Stack**: Jest + React Testing Library + electron-mock-ipc for complete coverage
+- **Testing Stack**: Jest + React Testing Library + custom Electron mocks for complete coverage
 - **Test Organization**: Unit, integration, and E2E tests with priority-based implementation
 - **Coverage Requirements**: 80%+ overall, 100% for critical paths (markdown, database, window management)
 - **Mock Strategy**: Comprehensive Electron API mocking for reliable, fast tests

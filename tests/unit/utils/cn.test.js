@@ -1,6 +1,6 @@
 /**
  * Test Suite: cn() Utility Function
- * 
+ *
  * Tests the composable className utility that intelligently combines
  * class names and filters out falsy values for conditional styling.
  */
@@ -61,14 +61,14 @@ describe('cn() Utility Function', () => {
       const isActive = true;
       const isDisabled = false;
       const hasError = true;
-      
+
       const result = cn(
         'base-class',
         isActive && 'active',
         isDisabled && 'disabled',
         hasError && 'error'
       );
-      
+
       expect(result).toBe('base-class active error');
     });
   });
@@ -81,7 +81,7 @@ describe('cn() Utility Function', () => {
       const variant = 'primary';
       const size = 'large';
       const disabled = false;
-      
+
       const result = cn(
         'btn',
         variant === 'primary' && 'btn-primary',
@@ -89,7 +89,7 @@ describe('cn() Utility Function', () => {
         size === 'large' && 'btn-lg',
         disabled && 'btn-disabled'
       );
-      
+
       expect(result).toBe('btn btn-primary btn-lg');
     });
 
@@ -97,14 +97,14 @@ describe('cn() Utility Function', () => {
       const isOpen = true;
       const isSelected = false;
       const hasChildren = true;
-      
+
       const result = cn(
         'menu-item',
         isOpen && 'menu-item--open',
         isSelected && 'menu-item--selected',
         hasChildren && 'menu-item--has-children'
       );
-      
+
       expect(result).toBe('menu-item menu-item--open menu-item--has-children');
     });
 
@@ -112,7 +112,7 @@ describe('cn() Utility Function', () => {
       const isMobile = false;
       const isDarkTheme = true;
       const className = 'custom-class';
-      
+
       const result = cn(
         'container',
         'p-4',
@@ -120,7 +120,7 @@ describe('cn() Utility Function', () => {
         isDarkTheme && 'dark:bg-gray-900',
         className
       );
-      
+
       expect(result).toBe('container p-4 dark:bg-gray-900 custom-class');
     });
 
@@ -128,7 +128,7 @@ describe('cn() Utility Function', () => {
       const isHovered = true;
       const isRemoving = false;
       const color = 'blue';
-      
+
       const result = cn(
         'tag-pill',
         'group',
@@ -139,8 +139,10 @@ describe('cn() Utility Function', () => {
         color === 'blue' && 'bg-blue-100 text-blue-800',
         color === 'green' && 'bg-green-100 text-green-800'
       );
-      
-      expect(result).toBe('tag-pill group flex items-center opacity-80 bg-blue-100 text-blue-800');
+
+      expect(result).toBe(
+        'tag-pill group flex items-center opacity-80 bg-blue-100 text-blue-800'
+      );
     });
   });
 
@@ -191,27 +193,39 @@ describe('cn() Utility Function', () => {
   describe('Performance and Type Safety', () => {
     it('performs well with many arguments', () => {
       const start = performance.now();
-      
+
       // Test with many arguments
       const result = cn(
-        'class1', 'class2', 'class3', 'class4', 'class5',
-        true && 'class6', false && 'class7', undefined,
-        'class8', 'class9', 'class10', null, 'class11'
+        'class1',
+        'class2',
+        'class3',
+        'class4',
+        'class5',
+        true && 'class6',
+        false && 'class7',
+        undefined,
+        'class8',
+        'class9',
+        'class10',
+        null,
+        'class11'
       );
-      
+
       const end = performance.now();
-      
-      expect(result).toBe('class1 class2 class3 class4 class5 class6 class8 class9 class10 class11');
+
+      expect(result).toBe(
+        'class1 class2 class3 class4 class5 class6 class8 class9 class10 class11'
+      );
       expect(end - start).toBeLessThan(10); // Should complete in under 10ms
     });
 
     it('returns consistent results for same inputs', () => {
       const inputs = ['base', true && 'active', false && 'disabled', 'end'];
-      
+
       const result1 = cn(...inputs);
       const result2 = cn(...inputs);
       const result3 = cn(...inputs);
-      
+
       expect(result1).toBe(result2);
       expect(result2).toBe(result3);
       expect(result1).toBe('base active end');
@@ -228,7 +242,7 @@ describe('cn() Utility Function', () => {
         undefined && 'undefined-value',
         '' && 'empty-string'
       );
-      
+
       expect(result).toBe('string number-truthy boolean-true');
     });
   });
@@ -252,14 +266,14 @@ describe('cn() Utility Function', () => {
     it('works with predefined style constants', () => {
       const variant = 'primary';
       const isDisabled = false;
-      
+
       const result = cn(
         mockButtonStyles.base,
         variant === 'primary' && mockButtonStyles.primary,
         variant === 'secondary' && mockButtonStyles.secondary,
         isDisabled && 'opacity-50'
       );
-      
+
       expect(result).toBe('btn btn-primary');
     });
 
@@ -269,7 +283,7 @@ describe('cn() Utility Function', () => {
         mockButtonStyles.base,
         'px-4 py-2'
       );
-      
+
       expect(result).toBe('flex items-center justify-center btn px-4 py-2');
     });
   });

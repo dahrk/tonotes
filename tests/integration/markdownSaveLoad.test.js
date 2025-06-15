@@ -1,6 +1,6 @@
 /**
  * Integration Test: Complete Markdown Save/Load Flow
- * 
+ *
  * Tests the entire pipeline from editor input through database
  * storage and back to rendered output. This ensures that the
  * complete user workflow preserves content correctly.
@@ -15,11 +15,11 @@ import { createMockNote } from '../utils/testHelpers';
 // Mock the database and electron APIs
 const mockDatabase = {
   notes: new Map(),
-  saveNote: jest.fn((note) => {
+  saveNote: jest.fn(note => {
     mockDatabase.notes.set(note.id, { ...note });
     return Promise.resolve(note);
   }),
-  getNote: jest.fn((id) => {
+  getNote: jest.fn(id => {
     return Promise.resolve(mockDatabase.notes.get(id));
   }),
   getAllNotes: jest.fn(() => {
@@ -43,7 +43,7 @@ Object.defineProperty(global.window, 'electronAPI', {
 jest.mock('../../src/utils/styles', () => ({
   editorStyles: {
     tiptap: 'tiptap-editor',
-    content: 'editor-content',  
+    content: 'editor-content',
     scrollable: 'scrollable-content',
   },
 }));
@@ -61,14 +61,14 @@ describe('Markdown Save/Load Integration', () => {
   it('complete save and reload cycle preserves all formatting', async () => {
     const user = userEvent.setup();
     let savedContent = '';
-    
+
     // Create initial note
     const initialNote = createMockNote({
-      content: '# Initial Content\n\nThis will be replaced'
+      content: '# Initial Content\n\nThis will be replaced',
     });
 
     // Mock onChange to capture saved content
-    const mockOnChange = jest.fn((content) => {
+    const mockOnChange = jest.fn(content => {
       savedContent = content;
     });
 
@@ -155,15 +155,15 @@ console.log('Hello World');
     // Verify task list functionality
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     expect(checkboxes.length).toBeGreaterThan(0);
-    
+
     // Check completed task is checked
-    const completedCheckbox = Array.from(checkboxes).find(cb => 
+    const completedCheckbox = Array.from(checkboxes).find(cb =>
       cb.closest('li')?.textContent?.includes('Completed task')
     );
     expect(completedCheckbox).toBeChecked();
 
     // Check pending task is not checked
-    const pendingCheckbox = Array.from(checkboxes).find(cb => 
+    const pendingCheckbox = Array.from(checkboxes).find(cb =>
       cb.closest('li')?.textContent?.includes('Pending task')
     );
     expect(pendingCheckbox).not.toBeChecked();
@@ -175,9 +175,9 @@ console.log('Hello World');
   it('multiple save/load cycles maintain content integrity', async () => {
     const user = userEvent.setup();
     const testContent = '# Test\n\n- [ ] Task 1\n- [x] Task 2\n\n**Bold text**';
-    
+
     let currentContent = testContent;
-    const mockOnChange = jest.fn((content) => {
+    const mockOnChange = jest.fn(content => {
       currentContent = content;
     });
 
@@ -231,8 +231,8 @@ console.log('Hello World');
     // Verify task states are maintained
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     expect(checkboxes.length).toBe(2);
-    
-    const task2Checkbox = Array.from(checkboxes).find(cb => 
+
+    const task2Checkbox = Array.from(checkboxes).find(cb =>
       cb.closest('li')?.textContent?.includes('Task 2')
     );
     expect(task2Checkbox).toBeChecked();
@@ -245,7 +245,7 @@ console.log('Hello World');
     allSamples.forEach(sample => {
       it(`preserves ${sample.description} through save/load`, async () => {
         let savedContent = '';
-        const mockOnChange = jest.fn((content) => {
+        const mockOnChange = jest.fn(content => {
           savedContent = content;
         });
 
@@ -277,7 +277,9 @@ console.log('Hello World');
         expect(reloadedNote).toBeTruthy();
 
         // Verify content can be loaded again
-        render(<TiptapEditor content={reloadedNote.content} onChange={jest.fn()} />);
+        render(
+          <TiptapEditor content={reloadedNote.content} onChange={jest.fn()} />
+        );
 
         // Should not crash and should contain some recognizable content
         await waitFor(() => {
@@ -293,14 +295,14 @@ console.log('Hello World');
   it('handles concurrent save operations gracefully', async () => {
     const user = userEvent.setup();
     const note = createMockNote({ content: 'Initial content' });
-    
+
     let content1 = '';
     let content2 = '';
-    
-    const mockOnChange1 = jest.fn((content) => {
+
+    const mockOnChange1 = jest.fn(content => {
       content1 = content;
     });
-    const mockOnChange2 = jest.fn((content) => {
+    const mockOnChange2 = jest.fn(content => {
       content2 = content;
     });
 

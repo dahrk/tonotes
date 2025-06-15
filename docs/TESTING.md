@@ -7,10 +7,10 @@ This application uses Jest and React Testing Library for comprehensive testing w
 ## Test Architecture
 
 ### Testing Stack
-- **Jest**: Test runner and assertion library
+- **Jest**: Test runner and assertion library with built-in mocking
 - **React Testing Library**: Component testing utilities
 - **@testing-library/user-event**: User interaction simulation
-- **electron-mock-ipc**: Electron API mocking
+- **Custom Electron mocks**: Comprehensive Electron API mocking using Jest
 
 ### Test Structure
 ```
@@ -216,10 +216,12 @@ Comprehensive markdown samples for testing edge cases:
 
 ### Electron API Mocking
 ```javascript
-// Complete electron mock setup
+// Custom Electron mock setup using Jest's built-in capabilities
+// No external libraries needed
 jest.mock('electron', () => ({
   BrowserWindow: jest.fn(() => mockWindow),
   app: { whenReady: jest.fn(), on: jest.fn() },
+  ipcMain: { handle: jest.fn(), on: jest.fn() },
   // ... other electron modules
 }));
 ```

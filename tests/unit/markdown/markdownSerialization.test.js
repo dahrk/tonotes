@@ -1,6 +1,6 @@
 /**
  * Test Suite: Markdown Serialization
- * 
+ *
  * Critical functionality that ensures user content is preserved exactly
  * as entered through save/load cycles. These tests catch the most
  * common user-facing bugs and ensure data integrity.
@@ -37,11 +37,11 @@ describe('Markdown Save/Load Cycle', () => {
   describe('Bullet List Formatting', () => {
     it('preserves bullet list formatting without line breaks', async () => {
       const input = '• First bullet\n• Second bullet\n• Third bullet';
-      
+
       // Render editor with bullet list content
       render(
-        <TiptapEditor 
-          content={input} 
+        <TiptapEditor
+          content={input}
           onChange={mockOnChange}
           onSave={mockOnSave}
         />
@@ -53,7 +53,9 @@ describe('Markdown Save/Load Cycle', () => {
       });
 
       // Check that bullets are rendered properly
-      const bulletElements = screen.getAllByText(/First bullet|Second bullet|Third bullet/);
+      const bulletElements = screen.getAllByText(
+        /First bullet|Second bullet|Third bullet/
+      );
       expect(bulletElements).toHaveLength(3);
 
       // Verify no separation between bullets and text
@@ -66,13 +68,8 @@ describe('Markdown Save/Load Cycle', () => {
 
     it('handles bullet lists with varying indentation', async () => {
       const input = '• Top level\n  • Indented item\n    • Double indented';
-      
-      render(
-        <TiptapEditor 
-          content={input} 
-          onChange={mockOnChange}
-        />
-      );
+
+      render(<TiptapEditor content={input} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('Top level')).toBeInTheDocument();
@@ -89,13 +86,8 @@ describe('Markdown Save/Load Cycle', () => {
   describe('Numbered List Sequence', () => {
     it('maintains numbered list sequence (1, 2, 3) not all 1s', async () => {
       const input = '1. First item\n2. Second item\n3. Third item';
-      
-      render(
-        <TiptapEditor 
-          content={input} 
-          onChange={mockOnChange}
-        />
-      );
+
+      render(<TiptapEditor content={input} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('First item')).toBeInTheDocument();
@@ -106,10 +98,10 @@ describe('Markdown Save/Load Cycle', () => {
       // Check that the list items have proper numbering in the DOM
       const orderedList = screen.getByRole('list');
       expect(orderedList.tagName).toBe('OL');
-      
+
       const listItems = screen.getAllByRole('listitem');
       expect(listItems).toHaveLength(3);
-      
+
       // Verify CSS class for proper numbering
       expect(orderedList).toHaveClass('tiptap-ordered-list');
     });
@@ -117,13 +109,8 @@ describe('Markdown Save/Load Cycle', () => {
     it('preserves numbered list sequence after content changes', async () => {
       const user = userEvent.setup();
       const input = '1. First item\n2. Second item';
-      
-      render(
-        <TiptapEditor 
-          content={input} 
-          onChange={mockOnChange}
-        />
-      );
+
+      render(<TiptapEditor content={input} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('First item')).toBeInTheDocument();
@@ -147,14 +134,10 @@ describe('Markdown Save/Load Cycle', () => {
    */
   describe('Nested Todo Indentation', () => {
     it('preserves nested todo indentation and checkbox rendering', async () => {
-      const input = '- [ ] Parent task\n  - [ ] Child task\n    - [x] Completed grandchild';
-      
-      render(
-        <TiptapEditor 
-          content={input} 
-          onChange={mockOnChange}
-        />
-      );
+      const input =
+        '- [ ] Parent task\n  - [ ] Child task\n    - [x] Completed grandchild';
+
+      render(<TiptapEditor content={input} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('Parent task')).toBeInTheDocument();
@@ -171,7 +154,7 @@ describe('Markdown Save/Load Cycle', () => {
       expect(checkboxes.length).toBe(3);
 
       // Verify completed state
-      const completedCheckbox = Array.from(checkboxes).find(cb => 
+      const completedCheckbox = Array.from(checkboxes).find(cb =>
         cb.closest('li')?.textContent?.includes('Completed grandchild')
       );
       expect(completedCheckbox).toBeChecked();
@@ -180,13 +163,8 @@ describe('Markdown Save/Load Cycle', () => {
     it('allows toggling nested todo checkboxes', async () => {
       const user = userEvent.setup();
       const input = '- [ ] Parent task\n  - [ ] Child task';
-      
-      render(
-        <TiptapEditor 
-          content={input} 
-          onChange={mockOnChange}
-        />
-      );
+
+      render(<TiptapEditor content={input} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('Child task')).toBeInTheDocument();
@@ -194,13 +172,13 @@ describe('Markdown Save/Load Cycle', () => {
 
       // Find and click the child task checkbox
       const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      const childCheckbox = Array.from(checkboxes).find(cb => 
+      const childCheckbox = Array.from(checkboxes).find(cb =>
         cb.closest('li')?.textContent?.includes('Child task')
       );
-      
+
       expect(childCheckbox).not.toBeChecked();
       await user.click(childCheckbox);
-      
+
       // Verify state change
       await waitFor(() => {
         expect(childCheckbox).toBeChecked();
@@ -215,10 +193,7 @@ describe('Markdown Save/Load Cycle', () => {
     allSamples.forEach(sample => {
       it(`preserves ${sample.description}`, async () => {
         render(
-          <TiptapEditor 
-            content={sample.markdown} 
-            onChange={mockOnChange}
-          />
+          <TiptapEditor content={sample.markdown} onChange={mockOnChange} />
         );
 
         // Wait for content to render
@@ -230,9 +205,10 @@ describe('Markdown Save/Load Cycle', () => {
         // The onChange should be called with JSON content (new format)
         await waitFor(() => {
           if (mockOnChange.mock.calls.length > 0) {
-            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const lastCall =
+              mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
             const contentString = lastCall[0];
-            
+
             // Should be JSON format (new standard)
             expect(() => JSON.parse(contentString)).not.toThrow();
           }
@@ -248,10 +224,7 @@ describe('Markdown Save/Load Cycle', () => {
     Object.entries(problematicCases).forEach(([caseName, testCase]) => {
       it(`handles ${testCase.description}`, async () => {
         render(
-          <TiptapEditor 
-            content={testCase.markdown} 
-            onChange={mockOnChange}
-          />
+          <TiptapEditor content={testCase.markdown} onChange={mockOnChange} />
         );
 
         await waitFor(() => {
@@ -277,19 +250,14 @@ describe('Markdown Save/Load Cycle', () => {
             content: [
               {
                 type: 'text',
-                text: 'Test paragraph'
-              }
-            ]
-          }
-        ]
+                text: 'Test paragraph',
+              },
+            ],
+          },
+        ],
       });
 
-      render(
-        <TiptapEditor 
-          content={jsonContent} 
-          onChange={mockOnChange}
-        />
-      );
+      render(<TiptapEditor content={jsonContent} onChange={mockOnChange} />);
 
       await waitFor(() => {
         expect(screen.getByText('Test paragraph')).toBeInTheDocument();
@@ -300,10 +268,7 @@ describe('Markdown Save/Load Cycle', () => {
       const markdownContent = '# Test Header\n\nTest paragraph';
 
       render(
-        <TiptapEditor 
-          content={markdownContent} 
-          onChange={mockOnChange}
-        />
+        <TiptapEditor content={markdownContent} onChange={mockOnChange} />
       );
 
       await waitFor(() => {
@@ -319,10 +284,10 @@ describe('Markdown Save/Load Cycle', () => {
   describe('Editor Interactions', () => {
     it('responds to save shortcut (CMD+S)', async () => {
       const user = userEvent.setup();
-      
+
       render(
-        <TiptapEditor 
-          content="Test content" 
+        <TiptapEditor
+          content="Test content"
           onChange={mockOnChange}
           onSave={mockOnSave}
         />
@@ -340,12 +305,9 @@ describe('Markdown Save/Load Cycle', () => {
 
     it('handles tab indentation correctly', async () => {
       const user = userEvent.setup();
-      
+
       render(
-        <TiptapEditor 
-          content="- [ ] Test task" 
-          onChange={mockOnChange}
-        />
+        <TiptapEditor content="- [ ] Test task" onChange={mockOnChange} />
       );
 
       await waitFor(() => {

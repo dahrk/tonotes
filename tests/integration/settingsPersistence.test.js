@@ -1,6 +1,6 @@
 /**
  * Integration Test: Settings Persistence
- * 
+ *
  * Tests the complete settings workflow including persistence,
  * application to windows, and system integration.
  */
@@ -191,7 +191,7 @@ describe('Settings Persistence Integration', () => {
     // Mock settings with always-on-top enabled
     const mockSettings = { alwaysOnTop: true, theme: 'system' };
     postItApp.settingsWindow.getSettings = jest.fn(() => mockSettings);
-    postItApp.settingsWindow.updateSettings = jest.fn((newSettings) => {
+    postItApp.settingsWindow.updateSettings = jest.fn(newSettings => {
       Object.assign(mockSettings, newSettings);
     });
 
@@ -349,8 +349,8 @@ describe('Settings Persistence Integration', () => {
     expect(BrowserWindow).toHaveBeenCalled();
 
     // Verify settings window has correct properties
-    const settingsWindowCall = BrowserWindow.mock.calls.find(call => 
-      call[0].title === 'PostIt Settings'
+    const settingsWindowCall = BrowserWindow.mock.calls.find(
+      call => call[0].title === 'PostIt Settings'
     );
     expect(settingsWindowCall).toBeTruthy();
 

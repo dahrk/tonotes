@@ -1,6 +1,6 @@
 /**
  * Test Suite: Window Lifecycle Management
- * 
+ *
  * Ensures windows are created, managed, and destroyed properly.
  * Critical for app stability and resource management.
  */
@@ -92,7 +92,7 @@ describe('Window Lifecycle Management', () => {
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
-    
+
     // Setup mock database
     mockDatabase = {
       initialize: jest.fn().mockResolvedValue(),
@@ -152,7 +152,7 @@ describe('Window Lifecycle Management', () => {
   describe('System Tray Persistence', () => {
     it('keeps system tray icon when all windows are closed', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate app initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -185,7 +185,7 @@ describe('Window Lifecycle Management', () => {
       mockDatabase.getAllNotes.mockReturnValue(mockNotes);
 
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -207,7 +207,7 @@ describe('Window Lifecycle Management', () => {
   describe('Window Creation and Management', () => {
     it('creates new window from system tray with no existing windows', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -219,7 +219,9 @@ describe('Window Lifecycle Management', () => {
 
       // Verify BrowserWindow was created
       expect(BrowserWindow).toHaveBeenCalled();
-      expect(mockBrowserWindow.loadFile || mockBrowserWindow.loadURL).toHaveBeenCalled();
+      expect(
+        mockBrowserWindow.loadFile || mockBrowserWindow.loadURL
+      ).toHaveBeenCalled();
       expect(mockBrowserWindow.show).toHaveBeenCalled();
       expect(mockBrowserWindow.focus).toHaveBeenCalled();
 
@@ -230,7 +232,7 @@ describe('Window Lifecycle Management', () => {
 
     it('creates window with correct position and size', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -246,9 +248,10 @@ describe('Window Lifecycle Management', () => {
       });
 
       // Verify BrowserWindow was created with correct options
-      const browserWindowCall = BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
+      const browserWindowCall =
+        BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
       const windowOptions = browserWindowCall[0];
-      
+
       expect(windowOptions.x).toBe(200);
       expect(windowOptions.y).toBe(300);
       expect(windowOptions.width).toBe(500);
@@ -257,7 +260,7 @@ describe('Window Lifecycle Management', () => {
 
     it('handles window position updates correctly', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -293,7 +296,7 @@ describe('Window Lifecycle Management', () => {
 
     it('handles window resize updates correctly', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -329,7 +332,7 @@ describe('Window Lifecycle Management', () => {
 
     it('cleans up window references when window is closed', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -365,7 +368,7 @@ describe('Window Lifecycle Management', () => {
   describe('Always-on-Top Functionality', () => {
     it('applies always-on-top setting to all windows', async () => {
       const postItApp = new PostItApp();
-      
+
       // Mock settings
       const mockSettings = { alwaysOnTop: true, theme: 'system' };
       postItApp.settingsWindow = {
@@ -385,25 +388,28 @@ describe('Window Lifecycle Management', () => {
 
       // Verify always-on-top was set for both windows
       expect(mockBrowserWindow.setAlwaysOnTop).toHaveBeenCalledWith(true);
-      
+
       // On macOS, should also set floating level
       if (process.platform === 'darwin') {
-        expect(mockBrowserWindow.setAlwaysOnTop).toHaveBeenCalledWith(true, 'floating', 1);
-        expect(mockBrowserWindow.setVisibleOnAllWorkspaces).toHaveBeenCalledWith(
-          true, 
-          { visibleOnFullScreen: true }
+        expect(mockBrowserWindow.setAlwaysOnTop).toHaveBeenCalledWith(
+          true,
+          'floating',
+          1
         );
+        expect(
+          mockBrowserWindow.setVisibleOnAllWorkspaces
+        ).toHaveBeenCalledWith(true, { visibleOnFullScreen: true });
       }
     });
 
     it('toggles always-on-top for all windows globally', async () => {
       const postItApp = new PostItApp();
-      
+
       // Mock settings
       const mockSettings = { alwaysOnTop: true, theme: 'system' };
       postItApp.settingsWindow = {
         getSettings: jest.fn(() => mockSettings),
-        updateSettings: jest.fn((newSettings) => {
+        updateSettings: jest.fn(newSettings => {
           Object.assign(mockSettings, newSettings);
         }),
       };
@@ -433,7 +439,7 @@ describe('Window Lifecycle Management', () => {
   describe('Window Focus and Recreation', () => {
     it('focuses existing window when requested', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -453,7 +459,7 @@ describe('Window Lifecycle Management', () => {
 
     it('recreates window from database when window is destroyed', async () => {
       const postItApp = new PostItApp();
-      
+
       // Mock note in database
       const mockNote = createMockNote({ id: 'test-note' });
       mockDatabase.getNote.mockReturnValue(mockNote);
@@ -478,7 +484,7 @@ describe('Window Lifecycle Management', () => {
 
     it('returns false when trying to focus non-existent note', async () => {
       const postItApp = new PostItApp();
-      
+
       // Mock database returning null
       mockDatabase.getNote.mockReturnValue(null);
 
@@ -502,7 +508,7 @@ describe('Window Lifecycle Management', () => {
   describe('Window Positioning', () => {
     it('cascades new windows with offset', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -519,14 +525,17 @@ describe('Window Lifecycle Management', () => {
       expect(windowCalls.length).toBe(3);
 
       // Each window should have different position
-      const positions = windowCalls.map(call => ({ x: call[0].x, y: call[0].y }));
+      const positions = windowCalls.map(call => ({
+        x: call[0].x,
+        y: call[0].y,
+      }));
       expect(positions[0]).not.toEqual(positions[1]);
       expect(positions[1]).not.toEqual(positions[2]);
     });
 
     it('keeps windows within screen boundaries', async () => {
       const postItApp = new PostItApp();
-      
+
       // Simulate initialization
       const readyCallback = app.whenReady.mock.calls[0][0];
       if (readyCallback) {
@@ -540,9 +549,10 @@ describe('Window Lifecycle Management', () => {
       });
 
       // Verify position was adjusted to stay on screen
-      const windowCall = BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
+      const windowCall =
+        BrowserWindow.mock.calls[BrowserWindow.mock.calls.length - 1];
       const windowOptions = windowCall[0];
-      
+
       expect(windowOptions.x).toBeLessThan(1920); // Screen width
       expect(windowOptions.y).toBeLessThan(1080); // Screen height
     });
