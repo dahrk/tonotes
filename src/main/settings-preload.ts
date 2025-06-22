@@ -6,6 +6,7 @@ const settingsAPI = {
   saveSettings: (settings: AppSettings) =>
     ipcRenderer.invoke('save-settings', settings),
   closeSettings: () => ipcRenderer.invoke('close-settings'),
+  deleteAllNotes: () => ipcRenderer.invoke('delete-all-notes'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', settingsAPI);

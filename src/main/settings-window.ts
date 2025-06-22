@@ -231,6 +231,16 @@ export class SettingsWindow {
             background: var(--button-primary-hover);
           }
           
+          .button-danger {
+            background: #dc3545;
+            color: white;
+            width: 100%;
+          }
+          
+          .button-danger:hover {
+            background: #c82333;
+          }
+          
           .inline-setting {
             display: flex;
             align-items: center;
@@ -306,6 +316,16 @@ export class SettingsWindow {
             </div>
           </div>
           
+          <div class="setting-group">
+            <div class="setting-label">Danger Zone</div>
+            <div class="setting-description">
+              Careful! These actions cannot be undone
+            </div>
+            <button class="button button-danger" onclick="deleteAllNotes()">
+              🗑️ Delete All Notes
+            </button>
+          </div>
+          
           <div class="buttons-container">
             <button class="button button-cancel" onclick="window.electronAPI.closeSettings()">
               Cancel
@@ -326,6 +346,12 @@ export class SettingsWindow {
             };
             
             window.electronAPI.saveSettings(settings);
+          }
+          
+          function deleteAllNotes() {
+            if (confirm('Are you sure you want to delete ALL notes? This action cannot be undone.')) {
+              window.electronAPI.deleteAllNotes();
+            }
           }
           
           // Handle keyboard shortcuts
@@ -401,6 +427,13 @@ export class SettingsWindow {
     ipcMain.handle('close-settings', () => {
       this.close();
     });
+
+    ipcMain.handle('delete-all-notes', () => {
+      // Call the main app's delete all notes function
+      if ((global as any).postItApp) {
+        (global as any).postItApp.deleteAllNotes();
+      }
+    });
   }
 
   public getSettings(): AppSettings {
@@ -443,6 +476,16 @@ export class SettingsWindow {
       this.window.webContents.executeJavaScript(`
         document.body.setAttribute('data-theme', '${theme}');
       `);
+    }
+  }
+
+  public refreshSettings() {
+    // If the settings window is open, refresh it to reflect current settings
+    if (this.window && !this.window.isDestroyed()) {
+      const settingsHTML = this.createSettingsHTML();
+      this.window.loadURL(
+        `data:text/html;charset=utf-8,${encodeURIComponent(settingsHTML)}`
+      );
     }
   }
 

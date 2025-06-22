@@ -188,6 +188,9 @@ class PostItApp {
     if (this.settingsWindow) {
       this.settingsWindow.updateSettings({ alwaysOnTop: newAlwaysOnTop });
 
+      // Refresh settings window if it's open to reflect the change
+      this.settingsWindow.refreshSettings();
+
       // Update system tray to reflect new state
       this.systemTray?.updateTrayMenu();
     }
@@ -347,6 +350,39 @@ class PostItApp {
     this.database.deleteNote(noteId);
     this.closeNote(noteId);
     this.updateTrayNoteCount();
+  }
+
+  public deleteAllNotes() {
+    // Get all note IDs before deletion
+    const allNotes = this.database.getAllNotes();
+    
+    // Close all note windows
+    this.noteWindows.forEach(window => {
+      if (!window.isDestroyed()) {
+        window.close();
+      }
+    });
+    this.noteWindows.clear();
+    
+    // Delete all notes from database
+    allNotes.forEach(note => {
+      this.database.deleteNote(note.id);
+    });
+    
+    // Update tray count
+    this.updateTrayNoteCount();
+    
+    // Show notification
+    try {
+      const { Notification } = require('electron');
+      new Notification({
+        title: 'PostIt',
+        body: `Deleted ${allNotes.length} note${allNotes.length !== 1 ? 's' : ''}`,
+        silent: true,
+      }).show();
+    } catch (error) {
+      console.warn('Failed to show notification:', error);
+    }
   }
 
   public focusNote(noteId: string): boolean {
