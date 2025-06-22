@@ -220,7 +220,12 @@ describe('cn() Utility Function', () => {
     });
 
     it('returns consistent results for same inputs', () => {
-      const inputs: (string | false | undefined)[] = ['base', true && 'active', false && 'disabled', 'end'];
+      const inputs: (string | false | undefined)[] = [
+        'base',
+        true && 'active',
+        false && 'disabled',
+        'end',
+      ];
 
       const result1 = cn(...inputs);
       const result2 = cn(...inputs);

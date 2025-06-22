@@ -69,7 +69,6 @@ export class SettingsWindow {
     });
   }
 
-
   private setupIPCHandlers() {
     ipcMain.handle('get-settings', () => {
       return this.settings;

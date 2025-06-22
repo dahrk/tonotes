@@ -355,7 +355,7 @@ class PostItApp {
   public deleteAllNotes() {
     // Get all note IDs before deletion
     const allNotes = this.database.getAllNotes();
-    
+
     // Close all note windows
     this.noteWindows.forEach(window => {
       if (!window.isDestroyed()) {
@@ -363,15 +363,15 @@ class PostItApp {
       }
     });
     this.noteWindows.clear();
-    
+
     // Delete all notes from database
     allNotes.forEach(note => {
       this.database.deleteNote(note.id);
     });
-    
+
     // Update tray count
     this.updateTrayNoteCount();
-    
+
     // Show notification
     try {
       const { Notification } = require('electron');

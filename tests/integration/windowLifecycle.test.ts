@@ -167,7 +167,9 @@ describe('Window Lifecycle Integration', () => {
       getNoteTags: jest.fn(() => []),
       getAllTags: jest.fn(() => []),
     };
-    (Database as jest.MockedClass<typeof Database>).mockImplementation(() => mockDatabase as any);
+    (Database as jest.MockedClass<typeof Database>).mockImplementation(
+      () => mockDatabase as any
+    );
 
     // Setup system tray mock
     mockSystemTray = {
@@ -175,7 +177,9 @@ describe('Window Lifecycle Integration', () => {
       updateTrayMenu: jest.fn(),
       destroy: jest.fn(),
     };
-    (SystemTray as jest.MockedClass<typeof SystemTray>).mockImplementation(() => mockSystemTray as any);
+    (SystemTray as jest.MockedClass<typeof SystemTray>).mockImplementation(
+      () => mockSystemTray as any
+    );
 
     // Reset BrowserWindow static methods
     (BrowserWindow as any).getAllWindows = jest.fn(() => []);
@@ -348,8 +352,11 @@ describe('Window Lifecycle Integration', () => {
     expect(deleteNoteHandler).toBeTruthy();
 
     // Get the window that was created for the note
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windowInstance = browserWindowMock.mock.results[0]?.value as MockWindow;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windowInstance = browserWindowMock.mock.results[0]
+      ?.value as MockWindow;
 
     // Simulate IPC call to delete note
     const mockEvent = { sender: { id: 1 } };
@@ -395,8 +402,12 @@ describe('Window Lifecycle Integration', () => {
     postItApp.handleSettingsChange({ theme: 'light', alwaysOnTop: false });
 
     // Verify theme was applied to all windows
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("setAttribute('data-theme', 'light')")
@@ -422,8 +433,11 @@ describe('Window Lifecycle Integration', () => {
     }
 
     // Mock window as destroyed
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windowInstance = browserWindowMock.mock.results[0]?.value as MockWindow;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windowInstance = browserWindowMock.mock.results[0]
+      ?.value as MockWindow;
     if (windowInstance) {
       windowInstance.isDestroyed.mockReturnValue(true);
     }
@@ -470,8 +484,12 @@ describe('Window Lifecycle Integration', () => {
     expect(mockSystemTray.destroy).toHaveBeenCalled();
 
     // Verify all windows were closed
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.close).toHaveBeenCalled();
     });

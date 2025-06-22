@@ -55,7 +55,9 @@ describe('Markdown Serialization (Priority 1)', () => {
       const problematicMarkdown = '• Item 1\n•  Item 2\n•Item 3';
       const normalizedMarkdown = '• Item 1\n• Item 2\n• Item 3';
 
-      mockMarkdownToHtml.mockReturnValue('<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>');
+      mockMarkdownToHtml.mockReturnValue(
+        '<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>'
+      );
       mockHtmlToMarkdown.mockReturnValue(normalizedMarkdown);
 
       const htmlOutput = mockMarkdownToHtml(problematicMarkdown);
@@ -90,7 +92,9 @@ describe('Markdown Serialization (Priority 1)', () => {
       const nonSequential = '3. Third item\n7. Seventh item\n1. First item';
       const normalized = '1. Third item\n2. Seventh item\n3. First item';
 
-      mockMarkdownToHtml.mockReturnValue('<ol><li>Third item</li><li>Seventh item</li><li>First item</li></ol>');
+      mockMarkdownToHtml.mockReturnValue(
+        '<ol><li>Third item</li><li>Seventh item</li><li>First item</li></ol>'
+      );
       mockHtmlToMarkdown.mockReturnValue(normalized);
 
       const htmlOutput = mockMarkdownToHtml(nonSequential);
@@ -195,8 +199,11 @@ describe('Markdown Serialization (Priority 1)', () => {
       // Edge case: Very long notes or many list items
 
       const largeContent = Array(100).fill('- [ ] Task item').join('\n');
-      const expectedLargeHtml = '<ul data-type="taskList">' +
-        Array(100).fill('<li data-type="taskItem" data-checked="false">Task item</li>').join('') +
+      const expectedLargeHtml =
+        '<ul data-type="taskList">' +
+        Array(100)
+          .fill('<li data-type="taskItem" data-checked="false">Task item</li>')
+          .join('') +
         '</ul>';
 
       mockMarkdownToHtml.mockReturnValue(expectedLargeHtml);

@@ -45,12 +45,13 @@ const SearchWindow: React.FC<SearchWindowProps> = ({ theme = 'light' }) => {
 
   const performSearch = async (searchQuery: string) => {
     if (!window.electronAPI) return;
-    
+
     setIsLoading(true);
     setShowInstructions(false);
 
     try {
-      const searchResults = await window.electronAPI.searchAllNotes(searchQuery);
+      const searchResults =
+        await window.electronAPI.searchAllNotes(searchQuery);
       setResults(searchResults);
     } catch (error) {
       console.error('Search error:', error);
@@ -122,29 +123,23 @@ const SearchWindow: React.FC<SearchWindowProps> = ({ theme = 'light' }) => {
     }
 
     if (isLoading) {
-      return (
-        <div className="loading">
-          Searching...
-        </div>
-      );
+      return <div className="loading">Searching...</div>;
     }
 
     if (results.length === 0 && query.length >= 2) {
-      return (
-        <div className="no-results">
-          No notes found for "{query}"
-        </div>
-      );
+      return <div className="no-results">No notes found for "{query}"</div>;
     }
 
-    return results.map((result) => (
+    return results.map(result => (
       <div
         key={result.id}
         className="result-item"
         onClick={() => selectNote(result.id)}
       >
         <div className="result-title">{result.title}</div>
-        <div className="result-content">{result.content.substring(0, 100)}...</div>
+        <div className="result-content">
+          {result.content.substring(0, 100)}...
+        </div>
         <div className="result-meta">
           <div className="result-tags">
             {result.tags.map((tag, index) => (

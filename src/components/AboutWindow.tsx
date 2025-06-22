@@ -4,7 +4,9 @@ interface AboutWindowProps {
   autoCloseDelay?: number;
 }
 
-const AboutWindow: React.FC<AboutWindowProps> = ({ autoCloseDelay = 10000 }) => {
+const AboutWindow: React.FC<AboutWindowProps> = ({
+  autoCloseDelay = 10000,
+}) => {
   useEffect(() => {
     // Auto-close after specified delay
     const timer = setTimeout(() => {
@@ -21,8 +23,8 @@ const AboutWindow: React.FC<AboutWindowProps> = ({ autoCloseDelay = 10000 }) => 
       <h1>📝 PostIt</h1>
       <div className="version">Version 1.0.0</div>
       <div className="description">
-        Beautiful sticky notes for your desktop with rich text support, 
-        task management, and intelligent note linking.
+        Beautiful sticky notes for your desktop with rich text support, task
+        management, and intelligent note linking.
       </div>
       <ul className="features">
         <li>✅ Markdown support with live preview</li>

@@ -45,7 +45,8 @@ const mockElectronAPI: ElectronAPI = {
 
 // Mock styles
 jest.mock('../../src/utils/styles', () => ({
-  cn: (...classes: (string | undefined | false)[]) => classes.filter(Boolean).join(' '),
+  cn: (...classes: (string | undefined | false)[]) =>
+    classes.filter(Boolean).join(' '),
   layoutStyles: {
     centerContent: 'center-content',
     macOSHeaderSpacing: 'macos-spacing',

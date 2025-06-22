@@ -54,7 +54,7 @@ const SettingsWindow: React.FC<SettingsWindowProps> = ({ theme = 'light' }) => {
   const handleInputChange = (field: keyof AppSettings, value: any) => {
     setSettings(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -67,7 +67,11 @@ const SettingsWindow: React.FC<SettingsWindowProps> = ({ theme = 'light' }) => {
   };
 
   const deleteAllNotes = async () => {
-    if (window.confirm('Are you sure you want to delete ALL notes? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete ALL notes? This action cannot be undone.'
+      )
+    ) {
       try {
         await window.electronAPI?.deleteAllNotes();
       } catch (error) {
@@ -90,42 +94,47 @@ const SettingsWindow: React.FC<SettingsWindowProps> = ({ theme = 'light' }) => {
   };
 
   return (
-    <div 
-      className="settings-app" 
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-    >
+    <div className="settings-app" onKeyDown={handleKeyDown} tabIndex={0}>
       <div className="settings-container">
         <div className="settings-title">⚙️ Settings</div>
-        
+
         <div className="setting-group">
           <div className="setting-label">Startup</div>
           <div className="setting-description">
             Configure how PostIt behaves when your computer starts
           </div>
           <div className="checkbox-container">
-            <input 
-              type="checkbox" 
-              id="launchOnStartup" 
+            <input
+              type="checkbox"
+              id="launchOnStartup"
               className="checkbox"
               checked={settings.launchOnStartup}
-              onChange={(e) => handleInputChange('launchOnStartup', e.target.checked)}
+              onChange={e =>
+                handleInputChange('launchOnStartup', e.target.checked)
+              }
             />
-            <label htmlFor="launchOnStartup">Launch PostIt when computer starts</label>
+            <label htmlFor="launchOnStartup">
+              Launch PostIt when computer starts
+            </label>
           </div>
         </div>
-        
+
         <div className="setting-group">
           <div className="setting-label">Appearance</div>
           <div className="setting-description">
             Choose how PostIt looks on your system
           </div>
           <div className="select-container">
-            <select 
-              id="theme" 
+            <select
+              id="theme"
               className="select"
               value={settings.theme}
-              onChange={(e) => handleInputChange('theme', e.target.value as 'system' | 'light' | 'dark')}
+              onChange={e =>
+                handleInputChange(
+                  'theme',
+                  e.target.value as 'system' | 'light' | 'dark'
+                )
+              }
             >
               <option value="system">System (Auto)</option>
               <option value="light">Light</option>
@@ -133,67 +142,65 @@ const SettingsWindow: React.FC<SettingsWindowProps> = ({ theme = 'light' }) => {
             </select>
           </div>
         </div>
-        
+
         <div className="setting-group">
           <div className="setting-label">Auto-save</div>
           <div className="setting-description">
             How often should notes be automatically saved (in seconds)
           </div>
           <div className="inline-setting">
-            <input 
-              type="number" 
-              id="autoSaveInterval" 
+            <input
+              type="number"
+              id="autoSaveInterval"
               className="number-input"
               min="5"
               max="300"
               value={settings.autoSaveInterval / 1000}
-              onChange={(e) => handleInputChange('autoSaveInterval', parseInt(e.target.value) * 1000)}
+              onChange={e =>
+                handleInputChange(
+                  'autoSaveInterval',
+                  parseInt(e.target.value) * 1000
+                )
+              }
             />
             <span>seconds</span>
           </div>
         </div>
-        
+
         <div className="setting-group">
           <div className="setting-label">Window Behavior</div>
           <div className="setting-description">
             Configure how note windows behave on your desktop
           </div>
           <div className="checkbox-container">
-            <input 
-              type="checkbox" 
-              id="alwaysOnTop" 
+            <input
+              type="checkbox"
+              id="alwaysOnTop"
               className="checkbox"
               checked={settings.alwaysOnTop}
-              onChange={(e) => handleInputChange('alwaysOnTop', e.target.checked)}
+              onChange={e => handleInputChange('alwaysOnTop', e.target.checked)}
             />
-            <label htmlFor="alwaysOnTop">Keep notes always on top of other windows</label>
+            <label htmlFor="alwaysOnTop">
+              Keep notes always on top of other windows
+            </label>
           </div>
         </div>
-        
+
         <div className="setting-group">
           <div className="setting-label">Danger Zone</div>
           <div className="setting-description">
             Careful! These actions cannot be undone
           </div>
-          <button 
-            className="button button-danger" 
-            onClick={deleteAllNotes}
-          >
+          <button className="button button-danger" onClick={deleteAllNotes}>
             🗑️ Delete All Notes
           </button>
         </div>
-        
+
         <div className="buttons-container">
-          <button 
-            className="button button-cancel" 
-            onClick={closeSettings}
-          >
+          <button className="button button-cancel" onClick={closeSettings}>
             Cancel
           </button>
-          <button 
-            className="button button-save" 
-            onClick={saveSettings}
-          >
+          <button className="button button-save" onClick={saveSettings}>
             Save Changes
           </button>
         </div>

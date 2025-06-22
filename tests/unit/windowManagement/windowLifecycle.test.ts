@@ -144,7 +144,9 @@ describe('Window Lifecycle Management', () => {
       deleteNote: jest.fn(),
       getNote: jest.fn(),
     };
-    (Database as jest.MockedClass<typeof Database>).mockImplementation(() => mockDatabase as any);
+    (Database as jest.MockedClass<typeof Database>).mockImplementation(
+      () => mockDatabase as any
+    );
 
     // Setup mock BrowserWindow
     mockBrowserWindow = {
@@ -169,7 +171,9 @@ describe('Window Lifecycle Management', () => {
         openDevTools: jest.fn(),
       },
     };
-    (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mockImplementation(() => mockBrowserWindow as any);
+    (
+      BrowserWindow as jest.MockedClass<typeof BrowserWindow>
+    ).mockImplementation(() => mockBrowserWindow as any);
 
     // Setup mock Tray
     mockTray = {
@@ -180,7 +184,9 @@ describe('Window Lifecycle Management', () => {
       setTitle: jest.fn(),
       popUpContextMenu: jest.fn(),
     };
-    (Tray as jest.MockedClass<typeof Tray>).mockImplementation(() => mockTray as any);
+    (Tray as jest.MockedClass<typeof Tray>).mockImplementation(
+      () => mockTray as any
+    );
 
     // Setup BrowserWindow static methods
     (BrowserWindow as any).getAllWindows = jest.fn(() => []);
@@ -294,7 +300,9 @@ describe('Window Lifecycle Management', () => {
       });
 
       // Verify BrowserWindow was created with correct options
-      const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+      const browserWindowMock = BrowserWindow as jest.MockedClass<
+        typeof BrowserWindow
+      >;
       const browserWindowCall =
         browserWindowMock.mock.calls[browserWindowMock.mock.calls.length - 1];
       const windowOptions = browserWindowCall[0];
@@ -479,7 +487,9 @@ describe('Window Lifecycle Management', () => {
       postItApp.toggleAlwaysOnTopGlobal();
 
       // Verify setting was updated
-      expect((postItApp as any).settingsWindow.updateSettings).toHaveBeenCalledWith({
+      expect(
+        (postItApp as any).settingsWindow.updateSettings
+      ).toHaveBeenCalledWith({
         alwaysOnTop: false,
       });
     });
@@ -577,7 +587,9 @@ describe('Window Lifecycle Management', () => {
       const noteId3 = postItApp.createNote();
 
       // Verify windows were created with cascading positions
-      const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+      const browserWindowMock = BrowserWindow as jest.MockedClass<
+        typeof BrowserWindow
+      >;
       const windowCalls = browserWindowMock.mock.calls;
       expect(windowCalls.length).toBe(3);
 
@@ -607,7 +619,9 @@ describe('Window Lifecycle Management', () => {
       });
 
       // Verify position was adjusted to stay on screen
-      const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+      const browserWindowMock = BrowserWindow as jest.MockedClass<
+        typeof BrowserWindow
+      >;
       const windowCall =
         browserWindowMock.mock.calls[browserWindowMock.mock.calls.length - 1];
       const windowOptions = windowCall[0];

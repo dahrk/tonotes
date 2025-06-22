@@ -11,6 +11,7 @@ if (!container) {
 const root = createRoot(container);
 
 // Theme detection
-const theme = document.body.getAttribute('data-theme') as 'light' | 'dark' || 'light';
+const theme =
+  (document.body.getAttribute('data-theme') as 'light' | 'dark') || 'light';
 
 root.render(<SearchWindow theme={theme} />);

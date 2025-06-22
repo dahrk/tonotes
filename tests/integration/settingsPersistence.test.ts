@@ -144,7 +144,9 @@ describe('Settings Persistence Integration', () => {
       deleteNote: jest.fn(),
       getNote: jest.fn(),
     };
-    (Database as jest.MockedClass<typeof Database>).mockImplementation(() => mockDatabase as any);
+    (Database as jest.MockedClass<typeof Database>).mockImplementation(
+      () => mockDatabase as any
+    );
 
     // Reset BrowserWindow static methods
     (BrowserWindow as any).getAllWindows = jest.fn(() => []);
@@ -168,14 +170,20 @@ describe('Settings Persistence Integration', () => {
     expect((postItApp as any).settingsWindow).toBeTruthy();
 
     // Get default settings
-    const settings = (postItApp as any).settingsWindow.getSettings() as MockSettings;
+    const settings = (
+      postItApp as any
+    ).settingsWindow.getSettings() as MockSettings;
     expect(settings.alwaysOnTop).toBe(true);
     expect(settings.theme).toBe('system');
 
     // Create a note and verify always-on-top is applied
     const noteId = postItApp.createNote();
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     const noteWindow = windows[windows.length - 1];
 
     expect(noteWindow.setAlwaysOnTop).toHaveBeenCalledWith(true);
@@ -206,8 +214,12 @@ describe('Settings Persistence Integration', () => {
     });
 
     // Verify theme was applied to all note windows
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("setAttribute('data-theme', 'dark')")
@@ -241,21 +253,29 @@ describe('Settings Persistence Integration', () => {
     // Mock settings with always-on-top enabled
     const mockSettings: MockSettings = { alwaysOnTop: true, theme: 'system' };
     (postItApp as any).settingsWindow.getSettings = jest.fn(() => mockSettings);
-    (postItApp as any).settingsWindow.updateSettings = jest.fn((newSettings: Partial<MockSettings>) => {
-      Object.assign(mockSettings, newSettings);
-    });
+    (postItApp as any).settingsWindow.updateSettings = jest.fn(
+      (newSettings: Partial<MockSettings>) => {
+        Object.assign(mockSettings, newSettings);
+      }
+    );
 
     // Toggle always-on-top off
     postItApp.toggleAlwaysOnTopGlobal();
 
     // Verify setting was updated
-    expect((postItApp as any).settingsWindow.updateSettings).toHaveBeenCalledWith({
+    expect(
+      (postItApp as any).settingsWindow.updateSettings
+    ).toHaveBeenCalledWith({
       alwaysOnTop: false,
     });
 
     // Verify all windows were updated
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.setAlwaysOnTop).toHaveBeenCalledWith(false);
     });
@@ -302,8 +322,12 @@ describe('Settings Persistence Integration', () => {
     }
 
     // Verify theme was applied to windows
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("setAttribute('data-theme', 'dark')")
@@ -336,7 +360,9 @@ describe('Settings Persistence Integration', () => {
     (postItApp1 as any).settingsWindow.updateSettings(customSettings);
 
     // Verify settings were updated
-    let settings = (postItApp1 as any).settingsWindow.getSettings() as MockSettings;
+    let settings = (
+      postItApp1 as any
+    ).settingsWindow.getSettings() as MockSettings;
     expect(settings.alwaysOnTop).toBe(false);
     expect(settings.theme).toBe('dark');
 
@@ -385,8 +411,12 @@ describe('Settings Persistence Integration', () => {
     postItApp.createNote();
 
     // Verify window was created with current settings
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     const newWindow = windows[windows.length - 1];
 
     expect(newWindow.setAlwaysOnTop).toHaveBeenCalledWith(false);
@@ -417,7 +447,9 @@ describe('Settings Persistence Integration', () => {
     expect(BrowserWindow).toHaveBeenCalled();
 
     // Verify settings window has correct properties
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
     const settingsWindowCall = browserWindowMock.mock.calls.find(
       (call: any[]) => call[0]?.title === 'PostIt Settings'
     );
@@ -514,7 +546,9 @@ describe('Settings Persistence Integration', () => {
     }).not.toThrow();
 
     // Settings should remain valid
-    const settings = (postItApp as any).settingsWindow.getSettings() as MockSettings;
+    const settings = (
+      postItApp as any
+    ).settingsWindow.getSettings() as MockSettings;
     expect(['system', 'light', 'dark']).toContain(settings.theme);
     expect(typeof settings.alwaysOnTop).toBe('boolean');
     expect(settings.autoSaveInterval).toBeGreaterThan(0);
@@ -546,8 +580,12 @@ describe('Settings Persistence Integration', () => {
     postItApp.handleSettingsChange(runtimeSettings);
 
     // Verify all windows were updated with new settings
-    const browserWindowMock = BrowserWindow as jest.MockedClass<typeof BrowserWindow>;
-    const windows = browserWindowMock.mock.results.map(result => result.value as MockWindow);
+    const browserWindowMock = BrowserWindow as jest.MockedClass<
+      typeof BrowserWindow
+    >;
+    const windows = browserWindowMock.mock.results.map(
+      result => result.value as MockWindow
+    );
     windows.forEach(window => {
       expect(window.setAlwaysOnTop).toHaveBeenCalledWith(false);
       expect(window.webContents.executeJavaScript).toHaveBeenCalledWith(

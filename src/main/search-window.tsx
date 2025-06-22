@@ -65,7 +65,6 @@ export class SearchWindow {
     });
   }
 
-
   private setupIPCHandlers() {
     ipcMain.handle('search-all-notes', async (_, query: string) => {
       try {

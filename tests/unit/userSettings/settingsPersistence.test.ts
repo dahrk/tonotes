@@ -68,7 +68,9 @@ describe('Settings Persistence', () => {
         executeJavaScript: jest.fn(),
       },
     };
-    (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mockImplementation(() => mockWindow as any);
+    (
+      BrowserWindow as jest.MockedClass<typeof BrowserWindow>
+    ).mockImplementation(() => mockWindow as any);
 
     settingsWindow = new SettingsWindow();
   });
@@ -122,7 +124,11 @@ describe('Settings Persistence', () => {
 
     it('saves and restores theme preference', () => {
       // Test each theme option
-      const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+      const themes: ('light' | 'dark' | 'system')[] = [
+        'light',
+        'dark',
+        'system',
+      ];
 
       themes.forEach(theme => {
         settingsWindow.updateSettings({ theme });
@@ -222,7 +228,13 @@ describe('Settings Persistence', () => {
       const initialSettings = settingsWindow.getSettings();
 
       // Try invalid boolean values
-      const invalidValues = ['true' as any, 1 as any, 0 as any, null as any, undefined as any];
+      const invalidValues = [
+        'true' as any,
+        1 as any,
+        0 as any,
+        null as any,
+        undefined as any,
+      ];
 
       invalidValues.forEach(value => {
         settingsWindow.updateSettings({ alwaysOnTop: value });
@@ -249,7 +261,9 @@ describe('Settings Persistence', () => {
       expect(BrowserWindow).toHaveBeenCalled();
 
       // Verify window options
-      const windowOptions = (BrowserWindow as jest.MockedClass<typeof BrowserWindow>).mock.calls[0][0];
+      const windowOptions = (
+        BrowserWindow as jest.MockedClass<typeof BrowserWindow>
+      ).mock.calls[0][0];
       expect(windowOptions.width).toBe(450);
       expect(windowOptions.height).toBe(350);
 
@@ -426,7 +440,7 @@ describe('Settings Persistence', () => {
     it('properly destroys window on app shutdown', () => {
       mockWindow.close = jest.fn();
       mockWindow.destroy = jest.fn();
-      
+
       settingsWindow.show();
 
       // Call destroy method

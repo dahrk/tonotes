@@ -142,7 +142,9 @@ describe('Markdown Save/Load Integration', () => {
       mockElectronAPI.notes.save.mockRejectedValue(new Error('Save failed'));
 
       // Should handle error without crashing
-      await expect(mockElectronAPI.notes.save(testNote)).rejects.toThrow('Save failed');
+      await expect(mockElectronAPI.notes.save(testNote)).rejects.toThrow(
+        'Save failed'
+      );
       expect(mockElectronAPI.notes.save).toHaveBeenCalledWith(testNote);
     });
   });
