@@ -213,55 +213,12 @@ export class SystemTray {
       },
     });
 
-    // Create simple about content
-    const aboutHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>About PostIt</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100vh;
-            box-sizing: border-box;
-          }
-          h1 { margin: 0 0 10px 0; font-size: 2em; }
-          .version { opacity: 0.8; margin-bottom: 20px; }
-          .description { line-height: 1.6; margin-bottom: 30px; }
-          .features { text-align: left; margin: 0 auto; max-width: 280px; }
-          .features li { margin: 5px 0; }
-        </style>
-      </head>
-      <body>
-        <h1>📝 PostIt</h1>
-        <div class="version">Version 1.0.0</div>
-        <div class="description">
-          Beautiful sticky notes for your desktop with rich text support, 
-          task management, and intelligent note linking.
-        </div>
-        <ul class="features">
-          <li>✅ Markdown support with live preview</li>
-          <li>📋 Todo lists with nested subtasks</li>
-          <li>🏷️ Tag-based organization</li>
-          <li>🔗 @-mention note linking</li>
-          <li>💾 Auto-save functionality</li>
-          <li>🎨 Color-coded notes</li>
-        </ul>
-      </body>
-      </html>
-    `;
-
-    aboutWindow.loadURL(
-      `data:text/html;charset=utf-8,${encodeURIComponent(aboutHTML)}`
-    );
+    // Load about interface
+    if (process.env.NODE_ENV === 'development') {
+      aboutWindow.loadURL('http://localhost:5173/about.html');
+    } else {
+      aboutWindow.loadFile(path.join(__dirname, '../../about.html'));
+    }
 
     // Center the window
     const primaryDisplay = screen.getPrimaryDisplay();
@@ -270,13 +227,6 @@ export class SystemTray {
     const x = Math.floor((screenWidth - 400) / 2);
     const y = Math.floor((screenHeight - 300) / 2);
     aboutWindow.setPosition(x, y);
-
-    // Auto-close after 10 seconds
-    setTimeout(() => {
-      if (!aboutWindow.isDestroyed()) {
-        aboutWindow.close();
-      }
-    }, 10000);
   }
 
   private createTrayIcon(): string {

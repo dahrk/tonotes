@@ -15,7 +15,8 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
         search: path.resolve(__dirname, 'search.html'),
-        settings: path.resolve(__dirname, 'settings.html')
+        settings: path.resolve(__dirname, 'settings.html'),
+        about: path.resolve(__dirname, 'about.html')
       },
       output: {
         manualChunks: {
