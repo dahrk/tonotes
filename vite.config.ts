@@ -14,7 +14,8 @@ export default defineConfig({
       external: ['electron'],
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        search: path.resolve(__dirname, 'search.html')
+        search: path.resolve(__dirname, 'search.html'),
+        settings: path.resolve(__dirname, 'settings.html')
       },
       output: {
         manualChunks: {
