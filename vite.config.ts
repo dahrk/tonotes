@@ -12,6 +12,10 @@ export default defineConfig({
     minify: 'terser',
     rollupOptions: {
       external: ['electron'],
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        search: path.resolve(__dirname, 'search.html')
+      },
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
@@ -32,6 +36,6 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000
+    port: 5173
   }
 });
